@@ -1,28 +1,23 @@
 import 'package:flutter/material.dart';
-import 'core/constants/app_colors.dart';
-import 'features/splash/splash_screen.dart';
+import 'package:flutter/services.dart';
+import 'app.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Paksa portrait mode (sesuai desain mobile)
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  // Status bar transparan agar sesuai desain Figma
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
+
   runApp(const MikuPlayApp());
-}
-
-class MikuPlayApp extends StatelessWidget {
-  const MikuPlayApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MikuPlay',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.background,
-        colorScheme: const ColorScheme.dark(
-          primary: AppColors.primary,
-          surface: AppColors.surface,
-        ),
-        fontFamily: 'Inter', // Menggunakan font Inter secara global
-      ),
-      home: const SplashScreen(),
-    );
-  }
 }

@@ -10,23 +10,31 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
+
+  # Navigasi
+  go_router: ^13.2.0
+
+  # Google Sign In
+  google_sign_in: ^6.2.1
+
+  # Font Inter
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo_mikuplay.png"
+  adaptive_icon_background: "#0A0B2E"
+  adaptive_icon_foreground: "assets/images/logo_foreground.png"
 
 flutter:
   uses-material-design: true
 
   assets:
     - assets/images/
-
-  # Daftarkan font Inter di sini
-  fonts:
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Italic-VariableFont_opsz,wght.ttf
-        - asset: assets/fonts/Inter-VariableFont_opsz,wght.ttf
-          weight: 700
