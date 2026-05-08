@@ -28,6 +28,9 @@ class AppColors {
   /// #080E42 — Card background (sedikit lebih terang dari navy)
   static const Color navyCard = Color(0xFF080E42);
 
+  /// Alias for navyCard used in screens
+  static const Color card = navyCard;
+
   /// #050535 — Surface sedang
   static const Color navySurf = Color(0xFF050535);
 
@@ -42,4 +45,9 @@ class AppColors {
   static Color skyWithOpacity(double opacity) => sky.withOpacity(opacity);
   static Color whiteWithOpacity(double opacity) => white.withOpacity(opacity);
   static Color tealWithOpacity(double opacity) => teal.withOpacity(opacity);
+
+  // Shorthand used in screens
+  static Color skyOp(double opacity) => sky.withOpacity(opacity);
+  static Color tealOp(double opacity) => teal.withOpacity(opacity);
+  static Color whiteOp(double opacity) => white.withOpacity(opacity);
 }

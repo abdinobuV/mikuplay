@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen>
 
     if (mounted) {
       setState(() => _isLoading = false);
-      context.go(AppRoutes.home);
+      context.go(Routes.home);
     }
   }
 
@@ -211,15 +211,7 @@ class _LoginScreenState extends State<LoginScreen>
                       Align(
                         alignment: Alignment.centerRight,
                         child: GestureDetector(
-                          onTap: () {
-                            // TODO: navigate to forgot password
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('Forgot password coming soon'),
-                                backgroundColor: AppColors.navyCard,
-                              ),
-                            );
-                          },
+                          onTap: () => context.push(Routes.forgotPassword),
                           child: const Text(
                             'Forgot password?',
                             style: TextStyle(
@@ -291,7 +283,7 @@ class _LoginScreenState extends State<LoginScreen>
                       // ── Link ke Sign Up ───────────────────
                       Center(
                         child: GestureDetector(
-                          onTap: () => context.go(AppRoutes.signup),
+                          onTap: () => context.push(Routes.signupStep1),
                           child: RichText(
                             text: TextSpan(
                               style: TextStyle(

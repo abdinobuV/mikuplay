@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _navigateAfterDelay() {
     Future.delayed(const Duration(milliseconds: 2600), () {
       if (mounted) {
-        context.go(AppRoutes.login);
+        context.go(Routes.onboarding);
       }
     });
   }
