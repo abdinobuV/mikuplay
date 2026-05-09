@@ -30,6 +30,7 @@ class AppColors {
 
   /// Alias for navyCard used in screens
   static const Color card = navyCard;
+  static const Color surface = navyCard;
 
   /// #050535 — Surface sedang
   static const Color navySurf = Color(0xFF050535);
@@ -50,4 +51,6 @@ class AppColors {
   static Color skyOp(double opacity) => sky.withOpacity(opacity);
   static Color tealOp(double opacity) => teal.withOpacity(opacity);
   static Color whiteOp(double opacity) => white.withOpacity(opacity);
+  static Color navyOp(double opacity) => navy.withOpacity(opacity);
+  static Color deepCyanOp(double opacity) => deepCyan.withOpacity(opacity);
 }
