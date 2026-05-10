@@ -1,10 +1,3 @@
-// ============================================================
-// FILE INI DISIMPAN DI:
-// lib/shared/widgets/animated_bottom_nav.dart
-//
-// BUAT FOLDER JIKA BELUM ADA: lib/shared/widgets/
-// ============================================================
-
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 

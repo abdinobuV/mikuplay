@@ -1,8 +1,3 @@
-// ============================================================
-// FILE INI DISIMPAN DI:
-// lib/shared/widgets/tap_scale_widget.dart
-// ============================================================
-
 import 'package:flutter/material.dart';
 
 /// Wrapper yang memberi efek "press down" saat widget ditekan.

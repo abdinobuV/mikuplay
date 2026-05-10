@@ -1,11 +1,3 @@
-// ============================================================
-// FILE INI DISIMPAN DI:
-// lib/core/animations/page_transitions.dart
-//
-// BUAT FOLDER BARU:
-// lib/core/animations/
-// ============================================================
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

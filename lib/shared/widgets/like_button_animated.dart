@@ -1,8 +1,3 @@
-// ============================================================
-// FILE INI DISIMPAN DI:
-// lib/shared/widgets/like_button_animated.dart
-// ============================================================
-
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 

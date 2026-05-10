@@ -3,7 +3,7 @@
 
 ---
 
-## Cara setup awal
+## setup awal
 
 ```bash
 flutter create mikuplay --org com.mikuplay --platforms android,ios
@@ -12,7 +12,7 @@ cd mikuplay
 
 ---
 
-## Struktur Direktori Lengkap
+## Struktur Direktori
 
 ```
 mikuplay/
