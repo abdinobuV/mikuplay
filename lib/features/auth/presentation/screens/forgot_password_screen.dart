@@ -1,8 +1,3 @@
-// ============================================================
-// FILE INI DISIMPAN DI:
-// lib/features/auth/presentation/screens/forgot_password_screen.dart
-// ============================================================
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';

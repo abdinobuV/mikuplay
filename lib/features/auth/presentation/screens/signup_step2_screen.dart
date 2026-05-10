@@ -1,8 +1,3 @@
-// ============================================================
-// FILE INI DISIMPAN DI:
-// lib/features/auth/presentation/screens/signup_step2_screen.dart
-// ============================================================
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
