@@ -1,8 +1,7 @@
 // ============================================================
 // FILE INI DISIMPAN DI:
 // lib/core/router/app_router.dart
-//
-// GANTI SELURUH ISI FILE LAMA DENGAN KODE INI
+// GANTI SELURUH ISI FILE LAMA
 // ============================================================
 
 import 'package:flutter/material.dart';
@@ -15,11 +14,15 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/signup_step1_screen.dart';
 import '../../features/auth/presentation/screens/signup_step2_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/search/presentation/screens/search_screen.dart';
+import '../../features/library/presentation/screens/library_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../shared/widgets/animated_bottom_nav.dart';
+import '../../shared/widgets/mini_player.dart';
+import '../animations/page_transitions.dart';
 
-// ── Semua nama route ─────────────────────────────────────────
 class Routes {
   Routes._();
-
   static const String splash         = '/';
   static const String onboarding     = '/onboarding';
   static const String login          = '/login';
@@ -27,117 +30,108 @@ class Routes {
   static const String signupStep1    = '/signup/step1';
   static const String signupStep2    = '/signup/step2';
   static const String home           = '/home';
+  static const String search         = '/search';
+  static const String library        = '/library';
+  static const String profile        = '/profile';
 }
 
-// ── Jenis transisi ───────────────────────────────────────────
-
-/// Fade (untuk splash → onboarding, login → home)
-CustomTransitionPage<T> _fadePage<T>(Widget child, GoRouterState state) {
-  return CustomTransitionPage<T>(
-    key: state.pageKey,
-    child: child,
-    transitionDuration: const Duration(milliseconds: 450),
-    transitionsBuilder: (_, animation, __, child) =>
-        FadeTransition(opacity: animation, child: child),
-  );
+/// Adapter untuk GoRouterState agar bisa digunakan di page_transitions.dart
+class _GoRouterAdapter implements GoRouterStateAdapter {
+  final GoRouterState state;
+  _GoRouterAdapter(this.state);
+  @override
+  ValueKey<String> get pageKey => state.pageKey;
 }
 
-/// Slide dari kanan (untuk push: login → signup, back → forgot password)
-CustomTransitionPage<T> _slidePage<T>(Widget child, GoRouterState state) {
-  return CustomTransitionPage<T>(
-    key: state.pageKey,
-    child: child,
-    transitionDuration: const Duration(milliseconds: 350),
-    transitionsBuilder: (_, animation, __, child) {
-      final tween = Tween<Offset>(
-        begin: const Offset(1.0, 0.0),
-        end: Offset.zero,
-      ).chain(CurveTween(curve: Curves.easeInOut));
-      return SlideTransition(position: animation.drive(tween), child: child);
-    },
-  );
-}
+// ── Shell nav key ────────────────────────────────────────────
+final _shellNavKey = GlobalKey<NavigatorState>();
 
-/// Slide dari bawah (untuk login/signup → home)
-CustomTransitionPage<T> _slideUpPage<T>(Widget child, GoRouterState state) {
-  return CustomTransitionPage<T>(
-    key: state.pageKey,
-    child: child,
-    transitionDuration: const Duration(milliseconds: 400),
-    transitionsBuilder: (_, animation, __, child) {
-      final tween = Tween<Offset>(
-        begin: const Offset(0.0, 1.0),
-        end: Offset.zero,
-      ).chain(CurveTween(curve: Curves.easeInOut));
-      return SlideTransition(position: animation.drive(tween), child: child);
-    },
-  );
-}
-
-// ── Router utama ─────────────────────────────────────────────
+// ── Router ───────────────────────────────────────────────────
 final GoRouter appRouter = GoRouter(
   initialLocation: Routes.splash,
-  debugLogDiagnostics: true, // matikan saat build release
-
+  debugLogDiagnostics: true,
   routes: [
-    // 1. Splash — auto-navigate ke onboarding setelah 2.8 detik
-    GoRoute(
-      path: Routes.splash,
-      pageBuilder: (context, state) =>
-          _fadePage(const SplashScreen(), state),
-    ),
+    GoRoute(path: Routes.splash,
+        pageBuilder: (_, s) => MikuTransitions.scaleUp(child: const SplashScreen(), state: _GoRouterAdapter(s))),
+    GoRoute(path: Routes.onboarding,
+        pageBuilder: (_, s) => MikuTransitions.fade(child: const OnboardingScreen(), state: _GoRouterAdapter(s))),
+    GoRoute(path: Routes.login,
+        pageBuilder: (_, s) => MikuTransitions.slideUp(child: const LoginScreen(), state: _GoRouterAdapter(s))),
+    GoRoute(path: Routes.forgotPassword,
+        pageBuilder: (_, s) => MikuTransitions.slideRight(child: const ForgotPasswordScreen(), state: _GoRouterAdapter(s))),
+    GoRoute(path: Routes.signupStep1,
+        pageBuilder: (_, s) => MikuTransitions.slideRight(child: const SignupStep1Screen(), state: _GoRouterAdapter(s))),
+    GoRoute(path: Routes.signupStep2,
+        pageBuilder: (_, s) => MikuTransitions.slideRight(child: const SignupStep2Screen(), state: _GoRouterAdapter(s))),
 
-    // 2. Onboarding — 3 halaman dengan PageView
-    GoRoute(
-      path: Routes.onboarding,
-      pageBuilder: (context, state) =>
-          _fadePage(const OnboardingScreen(), state),
-    ),
-
-    // 3. Login
-    GoRoute(
-      path: Routes.login,
-      pageBuilder: (context, state) =>
-          _fadePage(const LoginScreen(), state),
-    ),
-
-    // 4. Forgot Password
-    GoRoute(
-      path: Routes.forgotPassword,
-      pageBuilder: (context, state) =>
-          _slidePage(const ForgotPasswordScreen(), state),
-    ),
-
-    // 5. Sign Up Step 1
-    GoRoute(
-      path: Routes.signupStep1,
-      pageBuilder: (context, state) =>
-          _slidePage(const SignupStep1Screen(), state),
-    ),
-
-    // 6. Sign Up Step 2
-    GoRoute(
-      path: Routes.signupStep2,
-      pageBuilder: (context, state) =>
-          _slidePage(const SignupStep2Screen(), state),
-    ),
-
-    // 7. Home
-    GoRoute(
-      path: Routes.home,
-      pageBuilder: (context, state) =>
-          _slideUpPage(const HomeScreen(), state),
+    ShellRoute(
+      navigatorKey: _shellNavKey,
+      builder: (context, state, child) {
+        int tab = 0;
+        final loc = state.uri.toString();
+        if (loc.startsWith(Routes.search))  tab = 1;
+        if (loc.startsWith(Routes.library)) tab = 2;
+        if (loc.startsWith(Routes.profile)) tab = 3;
+        return _MainShell(activeTab: tab, child: child,
+          onNavTap: (i) {
+            switch (i) {
+              case 0: context.go(Routes.home);    break;
+              case 1: context.go(Routes.search);  break;
+              case 2: context.go(Routes.library); break;
+              case 3: context.go(Routes.profile); break;
+            }
+          },
+        );
+      },
+      routes: [
+        GoRoute(path: Routes.home,
+            pageBuilder: (_, s) => MikuTransitions.slideUp(child: const HomeScreen(), state: _GoRouterAdapter(s))),
+        GoRoute(path: Routes.search,
+            pageBuilder: (_, s) => MikuTransitions.fade(child: const SearchScreen(), state: _GoRouterAdapter(s))),
+        GoRoute(path: Routes.library,
+            pageBuilder: (_, s) => MikuTransitions.fade(child: const LibraryScreen(), state: _GoRouterAdapter(s))),
+        GoRoute(path: Routes.profile,
+            pageBuilder: (_, s) => MikuTransitions.fade(child: const ProfileScreen(), state: _GoRouterAdapter(s))),
+      ],
     ),
   ],
-
-  // Error page jika route tidak ditemukan
-  errorBuilder: (context, state) => Scaffold(
+  errorBuilder: (_, state) => Scaffold(
     backgroundColor: const Color(0xFF03045E),
-    body: Center(
-      child: Text(
-        'Page not found: ${state.uri}',
-        style: const TextStyle(color: Colors.white),
-      ),
-    ),
+    body: Center(child: Text('Not found: ${state.uri}',
+        style: const TextStyle(color: Colors.white))),
   ),
 );
+
+class _MainShell extends StatelessWidget {
+  final int activeTab;
+  final Widget child;
+  final ValueChanged<int> onNavTap;
+  const _MainShell({required this.activeTab, required this.child,
+    required this.onNavTap});
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: const Color(0xFF03045E),
+    body: child,
+    bottomNavigationBar: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Mini Player (Tanpa Melayang/Gantung) ──────────
+        // Hanya muncul jika di tab Home (Index 0)
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          child: activeTab == 0
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  child: MiniPlayer(onTap: () {}),
+                )
+              : const SizedBox.shrink(),
+        ),
+        // ── Navigation Bar ─────────────────────────────────
+        AnimatedBottomNav(
+            selectedIndex: activeTab, onTap: onNavTap),
+      ],
+    ),
+  );
+}

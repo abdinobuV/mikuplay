@@ -140,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen>
                       const SizedBox(height: 46),
 
                       // ── Label Email ───────────────────────
-                      _FieldLabel('Email'),
+                      const _FieldLabel('Email'),
                       const SizedBox(height: 8),
 
                       // ── Input Email ───────────────────────
@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen>
                       const SizedBox(height: 18),
 
                       // ── Label Password ────────────────────
-                      _FieldLabel('Password'),
+                      const _FieldLabel('Password'),
                       const SizedBox(height: 8),
 
                       // ── Input Password ────────────────────

@@ -145,11 +145,11 @@ class _SplashScreenState extends State<SplashScreen>
                 // Teks "mikuplay" + subtitle
                 FadeTransition(
                   opacity: _textOpacity,
-                  child: Column(
+                  child: const Column(
                     children: [
                       Text(
                         'mikuplay',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 32,
                           fontWeight: FontWeight.w700,
@@ -157,7 +157,7 @@ class _SplashScreenState extends State<SplashScreen>
                           letterSpacing: -1.0,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(
                         'your vocaloid universe',
                         style: TextStyle(

@@ -2,14 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
-// Import widget shared
-import '../../../../shared/widgets/miku_bottom_nav.dart';
-
-// Import layar asli yang sudah Anda buat
-import '../../../search/presentation/screens/search_screen.dart';
-import '../../../library/presentation/screens/library_screen.dart';
-import '../../../profile/presentation/screens/profile_screen.dart';
-
 class _TrackData {
   final String title;
   final String artist;
@@ -18,15 +10,8 @@ class _TrackData {
   const _TrackData({required this.title, required this.artist, required this.duration, this.imagePath});
 }
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedNavIndex = 0; // 0=Home, 1=Search, 2=Library, 3=Profile
 
   // ── Data lagu recently played (dari Figma) ──────────────────
   static const _recentTracks = [
@@ -56,97 +41,59 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.navy,
       body: Stack(
         children: [
-          // ── Konten Utama (IndexedStack untuk ganti halaman) ──
-          IndexedStack(
-            index: _selectedNavIndex,
-            children: [
-              _buildHomeTab(),
-              const SearchScreen(),
-              const LibraryScreen(),
-              const ProfileScreen(),
-            ],
-          ),
-
-          // ── Mini Player (Menempel di atas bottom nav) ──────────
-          if (_selectedNavIndex == 0)
-            Positioned(
-              left: 0, right: 0,
-              bottom: 77, // tinggi bottom nav
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: _MiniPlayer(
-                  onTap: () {},
-                ),
+          // Dekorasi kanan atas (khusus tab Home)
+          Positioned(
+            left: 262, top: -61,
+            child: Container(
+              width: 222, height: 222,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.tealOp(0.05),
               ),
             ),
-
-          // ── Shared Bottom Navigation Bar ─────────────────────
-          Positioned(
-            left: 0, right: 0, bottom: 0,
-            child: MikuBottomNav(
-              selectedIndex: _selectedNavIndex,
-              onTap: (i) => setState(() => _selectedNavIndex = i),
-            ),
+          ),
+          Column(
+            children: [
+              const SizedBox(height: 44),
+              _Navbar(onNotificationTap: () {}),
+              Expanded(
+                child: ListView(
+                  physics: const ClampingScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  children: [
+                    const SizedBox(height: 16),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: _SearchBar(),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildSectionHeader('Trending Vocaloid'),
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: _FeaturedCard(onTap: () {}),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildSectionHeader('Recently Played', showSeeAll: false),
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        children: _recentTracks.map((track) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _TrackRow(data: track, onTap: () {}),
+                        )).toList(),
+                      ),
+                    ),
+                    // Beri space agar konten tidak tertutup Mini Player di bawah
+                    const SizedBox(height: 100),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
-    );
-  }
-
-  // ── Widget untuk Tab Home ──────────────────────────────────
-  Widget _buildHomeTab() {
-    return Stack(
-      children: [
-        // Dekorasi kanan atas (khusus tab Home)
-        Positioned(
-          left: 262, top: -61,
-          child: Container(
-            width: 222, height: 222,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.tealOp(0.05),
-            ),
-          ),
-        ),
-        Column(
-          children: [
-            const SizedBox(height: 44),
-            _Navbar(onNotificationTap: () {}),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  const SizedBox(height: 16),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: _SearchBar(),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildSectionHeader('Trending Vocaloid'),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _FeaturedCard(onTap: () {}),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildSectionHeader('Recently Played', showSeeAll: false),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      children: _recentTracks.map((track) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _TrackRow(data: track, onTap: () {}),
-                      )).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 160),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -237,6 +184,7 @@ class _Navbar extends StatelessWidget {
             const Spacer(),
             GestureDetector(
               onTap: onNotificationTap,
+              behavior: HitTestBehavior.opaque,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -481,75 +429,5 @@ class _TrackRow extends StatelessWidget {
 
   Widget _buildMusicIcon() {
     return Center(child: Icon(Icons.music_note_rounded, size: 18, color: AppColors.tealOp(0.6)));
-  }
-}
-
-class _MiniPlayer extends StatelessWidget {
-  final VoidCallback onTap;
-  const _MiniPlayer({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 61,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.tealOp(0.3), width: 1),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 11),
-            ClipOval(
-              child: Image.asset(
-                'assets/images/melt_cover_art.png',
-                width: 36, height: 36, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 36, height: 36,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.tealOp(0.2)),
-                  child: Center(child: Icon(Icons.music_note_rounded, size: 18, color: AppColors.tealOp(0.7))),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Melt — ryo',
-                    style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.white),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Now Playing',
-                    style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.teal),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 30, height: 30,
-              decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF00748C)),
-              child: const Icon(Icons.play_arrow_rounded, size: 20, color: AppColors.white),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              width: 30, height: 30,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.skyOp(0.1),
-                border: Border.all(color: AppColors.skyOp(0.3), width: 1),
-              ),
-              child: Icon(Icons.skip_next_rounded, size: 20, color: AppColors.skyOp(0.8)),
-            ),
-            const SizedBox(width: 12),
-          ],
-        ),
-      ),
-    );
   }
 }

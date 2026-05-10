@@ -87,53 +87,54 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
 
-          Column(
-            children: [
-              // Status bar space
-              const SizedBox(height: 44),
+          SafeArea(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                const SizedBox(height: 17),
 
-              // ── Profile Header (Figma: bg=#050933, h=242, border-bottom)
-              _ProfileHeader(),
+                // ── Profile Header (avatar, name, handle, stats)
+                _ProfileHeader(),
 
-              // ── Menu items + logout (scrollable)
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.only(
-                      left: 20, right: 20, top: 20),
-                  children: [
-                    // Menu items
-                    ...List.generate(_menuItems.length, (i) => Padding(
-                      padding: const EdgeInsets.only(bottom: 9),
-                      child: _MenuItem(
-                        data: _menuItems[i],
+                // ── Menu items + logout
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: Column(
+                    children: [
+                      // Menu items
+                      ...List.generate(_menuItems.length, (i) => Padding(
+                        padding: const EdgeInsets.only(bottom: 9),
+                        child: _MenuItem(
+                          data: _menuItems[i],
+                          onTap: () {
+                            // TODO: context.push(_menuItems[i].route);
+                          },
+                        ),
+                      )),
+
+                      const SizedBox(height: 24),
+
+                      // ── Log Out button (Figma: border=red, transparent bg)
+                      _LogOutButton(
                         onTap: () {
-                          // TODO: context.push(_menuItems[i].route);
+                          showDialog(
+                            context: context,
+                            builder: (_) => _LogOutDialog(
+                              onConfirm: () {
+                                context.go(Routes.login);
+                              },
+                            ),
+                          );
                         },
                       ),
-                    )),
-
-                    const SizedBox(height: 24),
-
-                    // ── Log Out button (Figma: border=red, transparent bg)
-                    _LogOutButton(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => _LogOutDialog(
-                            onConfirm: () {
-                              context.go(Routes.login);
-                            },
-                          ),
-                        );
-                      },
-                    ),
-
-                    // Space untuk bottom nav
-                    const SizedBox(height: 90),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+
+                // Space untuk bottom nav
+                const SizedBox(height: 90),
+              ],
+            ),
           ),
         ],
       ),
@@ -182,24 +183,24 @@ class _ProfileHeader extends StatelessWidget {
                   ),
                 ),
               ),
-      // Avatar (Figma: size=71, foto user)
-      ClipOval(
-        child: Container(
-          width: 71, height: 71,
-          color: AppColors.card,
-          child: Image.asset(
-            'assets/images/avatar.png',
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const Icon(
-              Icons.person_rounded,
-              size: 40,
-              color: AppColors.sky,
+          // Avatar (Figma: size=71, foto user)
+          ClipOval(
+            child: Container(
+              width: 71, height: 71,
+              color: AppColors.card,
+              child: Image.asset(
+                'assets/images/avatar.png',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.person_rounded,
+                  size: 40,
+                  color: AppColors.sky,
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
-            ],
-          ),
           const SizedBox(height: 14),
 
           // ── Nama (Figma: 18.2px semi bold)
@@ -298,6 +299,7 @@ class _MenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
         height: 57,
         decoration: BoxDecoration(

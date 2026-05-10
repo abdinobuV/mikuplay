@@ -46,7 +46,6 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final _searchCtrl = TextEditingController();
-  bool _isSearching = false;
 
   // Figma categories dengan warna persis dari desain
   static const _categories = [
@@ -127,11 +126,19 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
                 const SizedBox(height: 16),
 
-// ── Search Bar (Figma: left=20, top=101, border=teal 40%) ──
+                // ── Search Bar (Figma: left=20, top=101, border=teal 40%) ──
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: SizedBox( // Container diubah jadi SizedBox karena kita hanya butuh tingginya saja (44)
+                  child: Container(
                     height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.card,
+                      borderRadius: BorderRadius.circular(99),
+                      border: Border.all(
+                        color: AppColors.tealOp(0.4),
+                        width: 1,
+                      ),
+                    ),
                     child: TextField(
                       controller: _searchCtrl,
                       style: const TextStyle(
@@ -139,45 +146,36 @@ class _SearchScreenState extends State<SearchScreen> {
                         fontSize: 13,
                         color: AppColors.white,
                       ),
-                      // MENGGABUNGKAN DEKORASI KE SINI
                       decoration: InputDecoration(
                         hintText: 'Search songs or artists...',
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          size: 20,
+                          color: AppColors.skyOp(0.4),
+                        ),
                         hintStyle: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 13,
                           color: AppColors.skyOp(0.4),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-
-                        // 1. Pindahkan warna background (AppColors.card) ke sini
-                        filled: true,
-                        fillColor: AppColors.card,
-
-                        // 2. Mengatur sudut lengkung (99) dan garis luar (border)
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(99),
                           borderSide: BorderSide.none,
                         ),
-
-                        // 3. Garis saat tidak diklik (Teal 40%)
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(99),
-                          borderSide: BorderSide(
-                            color: AppColors.tealOp(0.4),
-                            width: 1,
-                          ),
+                          borderSide: BorderSide.none,
                         ),
-
-                        // 4. Garis saat diklik/mengetik (Teal 100% agar lebih jelas)
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(99),
-                          borderSide: const BorderSide(
-                            color: AppColors.teal, // Atau tetap gunakan tealOp(0.4) sesuai seleramu
-                            width: 1,
-                          ),
+                          borderSide: BorderSide.none,
                         ),
                       ),
-                      onChanged: (v) => setState(() => _isSearching = v.isNotEmpty),
+                      onChanged: (v) {
+                        // Logic untuk menampilkan hasil pencarian bisa ditambahkan di sini
+                      },
                     ),
                   ),
                 ),
