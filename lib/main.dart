@@ -1,27 +1,35 @@
+// ============================================================
+// FILE INI DISIMPAN DI:
+// lib/main.dart
+// GANTI SELURUH ISI FILE LAMA
+// ============================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // AUTO-GENERATED oleh flutterfire configure
 import 'app.dart';
 
-void main() {
+void main() async {
+  // Wajib dipanggil sebelum Firebase.initializeApp
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Matikan fetching HTTP jika ingin menggunakan font lokal dari assets saja
-  GoogleFonts.config.allowRuntimeFetching = false;
+  // ── Inisialisasi Firebase ──────────────────────────────────
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-  // Paksa portrait mode (sesuai desain mobile)
-  SystemChrome.setPreferredOrientations([
+  // ── Paksa portrait mode ────────────────────────────────────
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // Status bar transparan agar sesuai desain Figma
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-    ),
-  );
+  // ── Status bar transparan (sesuai desain Figma) ────────────
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor:         Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+  ));
 
   runApp(const MikuPlayApp());
 }

@@ -22,3 +22,8 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+plugins {
+    // ... mungkin ada plugin lain di sini
+    // Tambahkan baris di bawah ini:
+}
