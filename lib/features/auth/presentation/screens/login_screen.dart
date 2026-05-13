@@ -1,14 +1,8 @@
-// ============================================================
-// FILE INI DISIMPAN DI:
-// lib/features/auth/presentation/screens/login_screen.dart
-// GANTI SELURUH ISI FILE LAMA
-// ============================================================
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
-import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/auth_service.dart'; // Pastikan import ini benar
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -54,8 +48,8 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() { _isLoading = true; _errorMsg = null; });
 
     final result = await AuthService.instance.signIn(
-      email:    _emailCtrl.text,
-      password: _passCtrl.text,
+      email:    _emailCtrl.text.trim(),
+      password: _passCtrl.text.trim(),
     );
 
     if (!mounted) return;
@@ -264,7 +258,6 @@ class _LoginScreenState extends State<LoginScreen>
           color: AppColors.tealOp(op)));
 }
 
-// ── Error Banner ──────────────────────────────────────────────
 class _ErrorBanner extends StatelessWidget {
   final String message;
   const _ErrorBanner({required this.message});
@@ -288,7 +281,6 @@ class _ErrorBanner extends StatelessWidget {
   }
 }
 
-// ── Google Button ─────────────────────────────────────────────
 class _GoogleButton extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onTap;
@@ -323,7 +315,6 @@ class _GoogleButton extends StatelessWidget {
   }
 }
 
-// ── Small Logo ────────────────────────────────────────────────
 class _SmallLogo extends StatelessWidget {
   const _SmallLogo();
   @override

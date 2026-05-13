@@ -143,34 +143,50 @@ final GoRouter appRouter = GoRouter(
   refreshListenable: _authListenable,
 
   // ── REDIRECT LOGIC ─────────────────────────────────────────
-  // Berjalan setiap kali auth state berubah.
-  // Menentukan ke mana user diarahkan berdasarkan login state.
+  // Berjalan setiap kali auth state berubah atau navigasi terjadi.
   redirect: (context, state) async {
     final user      = FirebaseAuth.instance.currentUser;
     final isLoggedIn = user != null;
-    final loc        = state.uri.toString();
+    final loc        = state.matchedLocation; // Menggunakan matchedLocation agar lebih akurat
 
-    final isAuthPage = loc == Routes.splash    ||
+    // 1. Selalu izinkan Splash Screen & rute Auth dasar (saat tidak login)
+    final isBaseAuthPage = loc == Routes.splash    ||
         loc == Routes.onboarding ||
         loc == Routes.login      ||
-        loc == Routes.signupStep1 ||
-        loc == Routes.signupStep2 ||
         loc == Routes.forgotPassword;
 
-    // ── Jika tidak login dan mencoba akses halaman utama ──────
-    if (!isLoggedIn && !isAuthPage) {
-      return Routes.login;
+    final isSignupPage = loc == Routes.signupStep1 ||
+        loc == Routes.signupStep2;
+
+    // ── Kasus: TIDAK LOGIN ──
+    if (!isLoggedIn) {
+      // Jika mencoba akses halaman utama/private, lempar ke login
+      if (!isBaseAuthPage && !isSignupPage) {
+        return Routes.login;
+      }
+      return null;
     }
 
-    // ── Jika sudah login dan masih di halaman auth ────────────
-    if (isLoggedIn && isAuthPage) {
+    // ── Kasus: SUDAH LOGIN ──
+    if (isLoggedIn) {
+      // Biarkan tetap di halaman signup agar bisa lanjut step 2
+      if (isSignupPage) return null;
+
       // Cek apakah onboarding sudah selesai
       final done = await FirestoreService.instance.isOnboardingDone(user.uid);
-      if (!done) return Routes.onboarding;
-      return Routes.home;
+
+      // Jika belum selesai dan tidak sedang di onboarding, paksa ke onboarding
+      if (!done && loc != Routes.onboarding) {
+        return Routes.onboarding;
+      }
+
+      // Jika sudah selesai tapi masih di halaman entry (login/onboarding), lempar ke home
+      if (done && (loc == Routes.login || loc == Routes.onboarding || loc == Routes.splash)) {
+        return Routes.home;
+      }
     }
 
-    return null; // tidak redirect
+    return null; // tidak ada redirect tambahan
   },
 
   routes: [

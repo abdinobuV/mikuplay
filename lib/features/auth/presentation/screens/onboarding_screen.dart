@@ -4,6 +4,9 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
 
+import '../../../../core/services/firestore_service.dart';
+import '../../../../core/services/auth_service.dart';
+
 // ── Data tiap halaman onboarding (sesuai Figma) ──────────────
 class _PageData {
   final String imageUrl;   // URL ilustrasi dari Figma
@@ -71,11 +74,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      context.go(Routes.login);
+      _finishOnboarding();
     }
   }
 
-  void _onSkip() => context.go(Routes.login);
+  void _onSkip() => _finishOnboarding();
+
+  Future<void> _finishOnboarding() async {
+    final user = AuthService.instance.currentUser;
+    if (user != null) {
+      // Tandai sudah selesai agar tidak dilempar balik oleh router
+      await FirestoreService.instance.markOnboardingDone(user.uid);
+    }
+    if (mounted) {
+      context.go(Routes.home);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

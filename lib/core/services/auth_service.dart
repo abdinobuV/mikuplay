@@ -163,7 +163,7 @@ class AuthService {
       }
       return AuthResult.fail(_mapFirebaseError(e.code));
     } catch (e) {
-      return AuthResult.fail('Google sign-in failed. Please try again.');
+      return AuthResult.fail('Google sign-in error: $e');
     }
   }
 

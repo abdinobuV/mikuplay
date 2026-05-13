@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/auth_service.dart'; // Tambahan Import
 
 class SignupStep1Screen extends StatefulWidget {
   const SignupStep1Screen({super.key});
@@ -19,7 +20,8 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
 
   bool _obscurePass    = true;
   bool _obscureConfirm = true;
-  bool _agreed         = true; // dari Figma: checkbox sudah tercentang
+  bool _agreed         = true;
+  bool _isLoading      = false; // State tambahan untuk loading
 
   @override
   void dispose() {
@@ -30,7 +32,8 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
     super.dispose();
   }
 
-  void _onNext() {
+  // ── Fungsi Sign Up Terhubung ke Firebase ─────────────────────
+  Future<void> _onNext() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_agreed) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -42,7 +45,32 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
       );
       return;
     }
-    context.push(Routes.signupStep2);
+
+    setState(() => _isLoading = true); // Nyalakan loading
+
+    // Proses pembuatan akun ke Firebase
+    final result = await AuthService.instance.signUp(
+      email: _emailCtrl.text.trim(),
+      password: _passCtrl.text.trim(),
+      username: _usernameCtrl.text.trim(),
+    );
+
+    if (!mounted) return;
+    setState(() => _isLoading = false); // Matikan loading
+
+    // Jika sukses daftar, baru dilanjutkan ke halaman Step 2
+    if (result.success) {
+      context.push(Routes.signupStep2);
+    } else {
+      // Jika gagal (email sudah terpakai, dll), tampilkan pesan error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.errorMessage ?? 'Pendaftaran gagal'),
+          backgroundColor: AppColors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -51,23 +79,10 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
       backgroundColor: AppColors.navy,
       body: Stack(
         children: [
-          // ── Dekorasi kiri atas (Figma: left=-60, top=-61, size=202) ──
-          Positioned(
-            left: -60, top: -61,
-            child: _circle(202),
-          ),
-          // ── Dekorasi kanan bawah (Figma: left=262, top=606, size=222) ──
-          Positioned(
-            left: 262, top: 606,
-            child: _circle(222),
-          ),
-          // ── Dekorasi kanan atas (Figma: left=202, top=-61, size=242) ──
-          Positioned(
-            left: 202, top: -61,
-            child: _circle(242, opacity: 0.04),
-          ),
+          Positioned(left: -60, top: -61, child: _circle(202)),
+          Positioned(left: 262, top: 606, child: _circle(222)),
+          Positioned(left: 202, top: -61, child: _circle(242, opacity: 0.04)),
 
-          // ── Konten utama ──────────────────────────────────────
           SafeArea(
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
@@ -76,7 +91,6 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ── Back link (Figma: left=20, top=57) ──────
                     Padding(
                       padding: const EdgeInsets.only(left: 20, top: 13),
                       child: GestureDetector(
@@ -97,7 +111,6 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
                     ),
                     const SizedBox(height: 68),
 
-                    // ── Title (Figma: center, 24.2px, bold) ─────
                     const Center(
                       child: Text(
                         'Sign Up for MikuPlay',
@@ -112,7 +125,6 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
                     ),
                     const SizedBox(height: 8),
 
-                    // ── Subtitle ─────────────────────────────────
                     Center(
                       child: Text(
                         'Start your music journey today',
@@ -125,18 +137,14 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
                     ),
                     const SizedBox(height: 22),
 
-                    // ── Step indicator ───────────────────────────
                     const Center(child: StepIndicator(activeStep: 1)),
                     const SizedBox(height: 22),
 
-                    // ── Form fields (padding horizontal 28) ──────
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 28),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-
-                          // Username
                           _fieldLabel('Username'),
                           const SizedBox(height: 8),
                           _buildTextField(
@@ -149,7 +157,6 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
                           ),
                           const SizedBox(height: 18),
 
-                          // Email
                           _fieldLabel('Email'),
                           const SizedBox(height: 8),
                           _buildTextField(
@@ -164,7 +171,6 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
                           ),
                           const SizedBox(height: 18),
 
-                          // Password
                           _fieldLabel('Password'),
                           const SizedBox(height: 8),
                           _buildTextField(
@@ -183,7 +189,6 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
                           ),
                           const SizedBox(height: 18),
 
-                          // Confirm Password
                           _fieldLabel('Confirm Password'),
                           const SizedBox(height: 8),
                           _buildTextField(
@@ -207,8 +212,6 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
                           ),
                           const SizedBox(height: 24),
 
-                          // ── Checkbox Terms ───────────────────────
-                          // (Figma: left=28, top=636)
                           TermsCheckbox(
                             agreed: _agreed,
                             onChanged: (val) =>
@@ -216,20 +219,24 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
                           ),
                           const SizedBox(height: 22),
 
-                          // ── CTA Button ───────────────────────────
-                          // (Figma: h=52, rounded=99px, text="Customize your Profile")
                           SizedBox(
                             width: double.infinity,
                             height: 52,
                             child: ElevatedButton(
-                              onPressed: _onNext,
+                              onPressed: _isLoading ? null : _onNext,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.teal,
                                 foregroundColor: AppColors.navy,
+                                disabledBackgroundColor: AppColors.tealOp(0.5),
                                 shape: const StadiumBorder(),
                                 elevation: 0,
                               ),
-                              child: const Text(
+                              child: _isLoading
+                                  ? const SizedBox(
+                                  width: 20, height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: AppColors.navy))
+                                  : const Text(
                                 'Customize your Profile',
                                 style: TextStyle(
                                   fontFamily: 'Inter',
@@ -252,8 +259,6 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
       ),
     );
   }
-
-  // ── Helper widgets ──────────────────────────────────────────
 
   Widget _circle(double size, {double opacity = 0.07}) => Container(
     width: size,
@@ -336,9 +341,8 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
   );
 }
 
-// ── Step indicator 1→2→3 (Figma node 48:15–25) ───────────────
 class StepIndicator extends StatelessWidget {
-  final int activeStep; // 1, 2, atau 3
+  final int activeStep;
   const StepIndicator({super.key, required this.activeStep});
 
   static const _labels = ['Account', 'Profile', 'Done'];
@@ -390,7 +394,6 @@ class _StepCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Lingkaran (Figma: size=28, teal jika aktif)
         Container(
           width: 28,
           height: 28,
@@ -420,7 +423,6 @@ class _StepCircle extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        // Label
         Text(
           label,
           style: TextStyle(
@@ -434,7 +436,6 @@ class _StepCircle extends StatelessWidget {
   }
 }
 
-// ── Checkbox Terms & Conditions ───────────────────────────────
 class TermsCheckbox extends StatelessWidget {
   final bool agreed;
   final ValueChanged<bool?> onChanged;
@@ -445,7 +446,6 @@ class TermsCheckbox extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Checkbox custom (Figma: size=18, rounded=4, teal border)
         GestureDetector(
           onTap: () => onChanged(!agreed),
           child: Container(

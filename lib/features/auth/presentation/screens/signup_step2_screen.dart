@@ -6,6 +6,9 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
 import 'signup_step1_screen.dart'; // untuk _StepIndicator & _TermsCheckbox
 
+import '../../../../core/services/firestore_service.dart';
+import '../../../../core/services/auth_service.dart';
+
 class SignupStep2Screen extends StatefulWidget {
   const SignupStep2Screen({super.key});
 
@@ -45,12 +48,36 @@ class _SignupStep2ScreenState extends State<SignupStep2Screen> {
       );
       return;
     }
+
+    final user = AuthService.instance.currentUser;
+    if (user == null) {
+      context.go(Routes.login);
+      return;
+    }
+
     setState(() => _isLoading = true);
-    // TODO: ganti dengan API call sesungguhnya
-    await Future.delayed(const Duration(milliseconds: 1800));
-    if (mounted) {
-      setState(() => _isLoading = false);
-      context.go(Routes.home);
+
+    try {
+      // 1. Simpan foto profil jika ada (TODO: upload ke Storage jika perlu)
+      if (_pickedImage != null) {
+        // Untuk saat ini simpan path lokal dulu atau skip upload
+        // await AuthService.instance.updateProfile(photoUrl: _pickedImage!.path);
+      }
+
+      // 2. Tandai onboarding selesai agar tidak kena redirect balik
+      await FirestoreService.instance.markOnboardingDone(user.uid);
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        context.go(Routes.home);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.red),
+        );
+      }
     }
   }
 
