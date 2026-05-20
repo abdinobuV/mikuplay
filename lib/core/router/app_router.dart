@@ -148,20 +148,18 @@ final GoRouter appRouter = GoRouter(
   // ── REDIRECT LOGIC ─────────────────────────────────────────
   // Berjalan setiap kali auth state berubah atau navigasi terjadi.
   redirect: (context, state) async {
-    final user      = FirebaseAuth.instance.currentUser;
+    final user       = FirebaseAuth.instance.currentUser;
     final isLoggedIn = user != null;
-    final loc        = state.matchedLocation; // Menggunakan matchedLocation agar lebih akurat
+    final loc        = state.matchedLocation;
 
-    // 1. Selalu izinkan Splash Screen & rute Auth dasar (saat tidak login)
-    final isBaseAuthPage = loc == Routes.splash    ||
-        loc == Routes.onboarding ||
-        loc == Routes.login      ||
-        loc == Routes.forgotPassword;
+    final isSplash       = loc == Routes.splash;
+    final isSignupPage   = loc.startsWith('/signup');
+    final isBaseAuthPage = isSplash ||
+                           loc == Routes.onboarding ||
+                           loc == Routes.login ||
+                           loc == Routes.forgotPassword;
 
-    final isSignupPage = loc == Routes.signupStep1 ||
-        loc == Routes.signupStep2;
-
-    // ── Kasus: TIDAK LOGIN ──
+    // ── Case: NOT LOGGED IN ──
     if (!isLoggedIn) {
       // Jika mencoba akses halaman utama/private, lempar ke login
       if (!isBaseAuthPage && !isSignupPage) {
@@ -170,10 +168,10 @@ final GoRouter appRouter = GoRouter(
       return null;
     }
 
-    // ── Kasus: SUDAH LOGIN ──
+    // ── Case: LOGGED IN ──
     if (isLoggedIn) {
-      // Biarkan tetap di halaman signup agar bisa lanjut step 2
-      if (isSignupPage) return null;
+      // Biarkan Splash dan Signup tetap tampil tanpa interupsi
+      if (isSplash || isSignupPage) return null;
 
       // Cek apakah onboarding sudah selesai
       final done = await FirestoreService.instance.isOnboardingDone(user.uid);
@@ -184,7 +182,7 @@ final GoRouter appRouter = GoRouter(
       }
 
       // Jika sudah selesai tapi masih di halaman entry (login/onboarding), lempar ke home
-      if (done && (loc == Routes.login || loc == Routes.onboarding || loc == Routes.splash)) {
+      if (done && (loc == Routes.login || loc == Routes.onboarding)) {
         return Routes.home;
       }
     }

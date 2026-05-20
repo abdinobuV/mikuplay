@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/firestore_service.dart';
 
 // ── Data menu item profil (Figma: 5 menu item)
 class _MenuData {
@@ -120,8 +122,12 @@ class ProfileScreen extends StatelessWidget {
                           showDialog(
                             context: context,
                             builder: (_) => _LogOutDialog(
-                              onConfirm: () {
-                                context.go(Routes.login);
+                              onConfirm: () async {
+                                await AuthService.instance.signOut();
+                                await FirestoreService.instance.clearLocalCache();
+                                if (context.mounted) {
+                                  context.go(Routes.login);
+                                }
                               },
                             ),
                           );

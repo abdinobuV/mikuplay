@@ -60,7 +60,7 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
 
     // Jika sukses daftar, baru dilanjutkan ke halaman Step 2
     if (result.success) {
-      context.push(Routes.signupStep2);
+      context.go(Routes.signupStep2);
     } else {
       // Jika gagal (email sudah terpakai, dll), tampilkan pesan error
       ScaffoldMessenger.of(context).showSnackBar(
