@@ -19,7 +19,9 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/search/presentation/screens/search_screen.dart';
 import '../../features/library/presentation/screens/library_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/player/presentation/screens/now_playing_screen.dart';
 import '../../shared/widgets/animated_bottom_nav.dart';
+import '../../shared/widgets/mini_player.dart';
 
 // ── Route constants ──────────────────────────────────────────
 class Routes {
@@ -34,6 +36,7 @@ class Routes {
   static const String search         = '/search';
   static const String library        = '/library';
   static const String profile        = '/profile';
+  static const String nowPlaying      = '/now-playing';
 }
 
 // ── Durasi transisi ──────────────────────────────────────────
@@ -216,6 +219,27 @@ final GoRouter appRouter = GoRouter(
       pageBuilder: (_, s) => _slideRight(const SignupStep2Screen(), s),
     ),
 
+    // ── Player route (Full Screen) ──────────────────────────
+    GoRoute(
+      path: Routes.nowPlaying,
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const NowPlayingScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.ease;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+      ),
+    ),
+
     // ── Main app (ShellRoute) ────────────────────────────────
     ShellRoute(
       navigatorKey: _shellNavKey,
@@ -275,8 +299,18 @@ class _MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: const Color(0xFF03045E),
+    body: Stack(
+      children: [
+        child,
+        const Positioned(
+          left: 0,
+          right: 0,
+          bottom: 10, // Memberi jarak dari bottom nav
+          child: MiniPlayer(),
+        ),
+      ],
+    ),
     bottomNavigationBar: AnimatedBottomNav(
         selectedIndex: activeTab, onTap: onNavTap),
-    body: child,
   );
 }

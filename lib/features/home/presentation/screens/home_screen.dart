@@ -1,13 +1,50 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/audio_player_service.dart';
+import '../../../../core/models/song_model.dart';
 
 class _TrackData {
+  final String id;
   final String title;
   final String artist;
   final String duration;
   final String? imagePath;
-  const _TrackData({required this.title, required this.artist, required this.duration, this.imagePath});
+  final String audioUrl;
+  final String album;
+  final String year;
+
+  const _TrackData({
+    required this.id,
+    required this.title,
+    required this.artist,
+    required this.duration,
+    this.imagePath,
+    required this.audioUrl,
+    this.album = 'Vocaloid Classic',
+    this.year = '2024',
+  });
+
+  Song toSong() {
+    return Song(
+      id: id,
+      title: title,
+      artist: artist,
+      album: album,
+      imageUrl: imagePath != null ? 'assets/images/$imagePath' : '',
+      audioUrl: audioUrl,
+      duration: _parseDuration(duration),
+      year: year,
+    );
+  }
+
+  Duration _parseDuration(String d) {
+    final parts = d.split(':');
+    if (parts.length == 2) {
+      return Duration(minutes: int.parse(parts[0]), seconds: int.parse(parts[1]));
+    }
+    return Duration.zero;
+  }
 }
 
 class HomeScreen extends StatelessWidget {
@@ -16,27 +53,50 @@ class HomeScreen extends StatelessWidget {
   // ── Data lagu recently played (dari Figma) ──────────────────
   static const _recentTracks = [
     _TrackData(
+      id: '1',
       title: 'World is Mine',
       artist: 'ryo',
       duration: '4:09',
       imagePath: 'world_is_mine.png',
+      audioUrl: 'assets/audio/world_is_mine.mp3', 
     ),
     _TrackData(
+      id: '2',
       title: 'Decorator',
       artist: 'Livetune',
       duration: '5:02',
       imagePath: 'decorator_art.png',
+      audioUrl: 'assets/audio/decorator.mp3',
     ),
     _TrackData(
+      id: '3',
       title: 'Hibikase',
       artist: 'GigaP',
       duration: '3:58',
       imagePath: 'hibikase_art.png',
+      audioUrl: 'assets/audio/hibikase.mp3',
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final audioService = AudioPlayerService();
+    // Inisialisasi playlist agar fitur Next berfungsi
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final songs = _recentTracks.map((t) => t.toSong()).toList();
+      // Tambahkan Melt ke playlist juga
+      songs.insert(0, const _TrackData(
+        id: 'trending_1',
+        title: 'Melt',
+        artist: 'ryo',
+        duration: '4:33',
+        imagePath: 'melt_cover_art.png',
+        audioUrl: 'assets/audio/melt.mp3',
+        year: '2007',
+      ).toSong());
+      audioService.setPlaylist(songs);
+    });
+
     return Scaffold(
       backgroundColor: AppColors.navy,
       body: Stack(
@@ -71,7 +131,19 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: _FeaturedCard(onTap: () {}),
+                      child: _FeaturedCard(onTap: () {
+                        AudioPlayerService().setSong(
+                          const _TrackData(
+                            id: 'trending_1',
+                            title: 'Melt',
+                            artist: 'ryo',
+                            duration: '4:33',
+                            imagePath: 'melt_cover_art.png',
+                            audioUrl: 'assets/audio/melt.mp3',
+                            year: '2007',
+                          ).toSong(),
+                        );
+                      }),
                     ),
                     const SizedBox(height: 20),
                     _buildSectionHeader('Recently Played', showSeeAll: false),
@@ -81,12 +153,15 @@ class HomeScreen extends StatelessWidget {
                       child: Column(
                         children: _recentTracks.map((track) => Padding(
                           padding: const EdgeInsets.only(bottom: 10),
-                          child: _TrackRow(data: track, onTap: () {}),
+                          child: _TrackRow(
+                            data: track,
+                            onTap: () => AudioPlayerService().setSong(track.toSong()),
+                          ),
                         )).toList(),
                       ),
                     ),
                     // Beri space agar konten tidak tertutup Mini Player di bawah
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -236,6 +311,7 @@ class _FeaturedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
         height: 140,
         clipBehavior: Clip.antiAlias,
@@ -366,6 +442,7 @@ class _TrackRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
         height: 57,
         decoration: BoxDecoration(
