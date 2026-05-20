@@ -4,7 +4,6 @@ import 'package:rxdart/rxdart.dart';
 import '../models/song_model.dart';
 
 class AudioPlayerService {
-  // Singleton instance
   static final AudioPlayerService _instance = AudioPlayerService._internal();
   factory AudioPlayerService() => _instance;
 
@@ -15,23 +14,19 @@ class AudioPlayerService {
       print('A stream error occurred: $e');
     });
 
-    // Listen to position changes and combine with duration and buffered position
     _player.positionStream.listen((pos) => _positionSubject.add(pos));
     _player.durationStream.listen((dur) => _durationSubject.add(dur ?? Duration.zero));
     _player.playerStateStream.listen((state) {
-      print("Player State Change: ${state.processingState}, playing: ${state.playing}");
       _playerStateSubject.add(state);
     });
   }
 
-  // Subjects for streaming state
   final _positionSubject = BehaviorSubject<Duration>.seeded(Duration.zero);
   final _durationSubject = BehaviorSubject<Duration>.seeded(Duration.zero);
   final _playerStateSubject = BehaviorSubject<PlayerState>();
   final _currentSongSubject = BehaviorSubject<Song?>();
   final _playlistSubject = BehaviorSubject<List<Song>>.seeded([]);
 
-  // Getters for streams
   Stream<Duration> get positionStream => _positionSubject.stream;
   Stream<Duration> get durationStream => _durationSubject.stream;
   Stream<PlayerState> get playerStateStream => _playerStateSubject.stream;
@@ -47,7 +42,6 @@ class AudioPlayerService {
     final songs = _playlistSubject.value;
     final current = currentSong;
     if (songs.isEmpty || current == null) return;
-
     final currentIndex = songs.indexWhere((s) => s.id == current.id);
     if (currentIndex == -1) return;
     final nextIndex = (currentIndex + 1) % songs.length;
@@ -58,7 +52,6 @@ class AudioPlayerService {
     final songs = _playlistSubject.value;
     final current = currentSong;
     if (songs.isEmpty || current == null) return;
-
     final currentIndex = songs.indexWhere((s) => s.id == current.id);
     if (currentIndex == -1) return;
     final prevIndex = (currentIndex - 1 + songs.length) % songs.length;
@@ -71,50 +64,38 @@ class AudioPlayerService {
     if (_currentSongSubject.hasValue && 
         _currentSongSubject.value?.id == song.id && 
         _player.playing) {
-      print("Song already playing, skipping setUrl");
       return;
     }
     
     try {
       _currentSongSubject.add(song);
-      
-      // Stop current playback before switching
       await _player.stop();
 
-      // Memastikan path asset benar untuk notifikasi
-      final audioUri = song.audioUrl.startsWith('assets/') 
-          ? 'asset:///${song.audioUrl}' 
-          : song.audioUrl;
-          
+      // KHUSUS ANDROID: Menggunakan AudioSource.uri dengan tag MediaItem yang sangat spesifik
+      // Format URI harus tepat 'asset:///assets/images/...'
       final artUri = song.imageUrl.startsWith('assets/')
-          ? 'asset:///${song.imageUrl}'
-          : song.imageUrl;
+          ? Uri.parse('asset:///${song.imageUrl}')
+          : Uri.parse(song.imageUrl);
 
-      print("Audio URI: $audioUri");
-      print("Art URI: $artUri");
+      final audioUri = song.audioUrl.startsWith('assets/')
+          ? Uri.parse('asset:///${song.audioUrl}')
+          : Uri.parse(song.audioUrl);
 
       final audioSource = AudioSource.uri(
-        Uri.parse(audioUri),
+        audioUri,
         tag: MediaItem(
           id: song.id,
           album: song.album,
           title: song.title,
           artist: song.artist,
-          artUri: Uri.parse(artUri),
-          // Menambahkan info tambahan untuk notifikasi Android
-          displayTitle: song.title,
-          displaySubtitle: song.artist,
-          displayDescription: song.album,
+          artUri: artUri,
         ),
       );
       
       await _player.setAudioSource(audioSource);
-      
-      print("Load successful, calling play()");
       await _player.play();
-    } catch (e, stack) {
-      print("CRITICAL ERROR loading audio: $e");
-      print(stack);
+    } catch (e) {
+      print("Error loading audio: $e");
     }
   }
 
@@ -123,12 +104,13 @@ class AudioPlayerService {
   Future<void> seek(Duration position) async => await _player.seek(position);
   Future<void> stop() async => await _player.stop();
 
-  void dispose() {
-    _player.dispose();
-    _positionSubject.close();
-    _durationSubject.close();
-    _playerStateSubject.close();
-    _currentSongSubject.close();
-    _playlistSubject.close();
+  Future<void> seekForward() async {
+    final newPosition = _player.position + const Duration(seconds: 10);
+    await _player.seek(newPosition);
+  }
+
+  Future<void> seekBackward() async {
+    final newPosition = _player.position - const Duration(seconds: 10);
+    await _player.seek(newPosition);
   }
 }
