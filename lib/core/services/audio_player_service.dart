@@ -1,4 +1,5 @@
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:rxdart/rxdart.dart';
 import '../models/song_model.dart';
 
@@ -48,14 +49,25 @@ class AudioPlayerService {
     if (songs.isEmpty || current == null) return;
 
     final currentIndex = songs.indexWhere((s) => s.id == current.id);
+    if (currentIndex == -1) return;
     final nextIndex = (currentIndex + 1) % songs.length;
     await setSong(songs[nextIndex]);
+  }
+
+  Future<void> skipToPrevious() async {
+    final songs = _playlistSubject.value;
+    final current = currentSong;
+    if (songs.isEmpty || current == null) return;
+
+    final currentIndex = songs.indexWhere((s) => s.id == current.id);
+    if (currentIndex == -1) return;
+    final prevIndex = (currentIndex - 1 + songs.length) % songs.length;
+    await setSong(songs[prevIndex]);
   }
 
   Future<void> setSong(Song song) async {
     print("Attempting to play song: ${song.title} from ${song.audioUrl}");
     
-    // Use hasValue and valueOrNull for safety
     if (_currentSongSubject.hasValue && 
         _currentSongSubject.value?.id == song.id && 
         _player.playing) {
@@ -68,14 +80,35 @@ class AudioPlayerService {
       
       // Stop current playback before switching
       await _player.stop();
+
+      // Memastikan path asset benar untuk notifikasi
+      final audioUri = song.audioUrl.startsWith('assets/') 
+          ? 'asset:///${song.audioUrl}' 
+          : song.audioUrl;
+          
+      final artUri = song.imageUrl.startsWith('assets/')
+          ? 'asset:///${song.imageUrl}'
+          : song.imageUrl;
+
+      print("Audio URI: $audioUri");
+      print("Art URI: $artUri");
+
+      final audioSource = AudioSource.uri(
+        Uri.parse(audioUri),
+        tag: MediaItem(
+          id: song.id,
+          album: song.album,
+          title: song.title,
+          artist: song.artist,
+          artUri: Uri.parse(artUri),
+          // Menambahkan info tambahan untuk notifikasi Android
+          displayTitle: song.title,
+          displaySubtitle: song.artist,
+          displayDescription: song.album,
+        ),
+      );
       
-      if (song.audioUrl.startsWith('assets/')) {
-        print("Loading asset: ${song.audioUrl}");
-        await _player.setAsset(song.audioUrl);
-      } else {
-        print("Loading URL: ${song.audioUrl}");
-        await _player.setUrl(song.audioUrl);
-      }
+      await _player.setAudioSource(audioSource);
       
       print("Load successful, calling play()");
       await _player.play();
@@ -96,5 +129,6 @@ class AudioPlayerService {
     _durationSubject.close();
     _playerStateSubject.close();
     _currentSongSubject.close();
+    _playlistSubject.close();
   }
 }
