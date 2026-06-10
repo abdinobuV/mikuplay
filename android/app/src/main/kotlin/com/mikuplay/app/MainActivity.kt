@@ -1,4 +1,4 @@
-package com.example.mikuplay
+package com.mikuplay.app
 
 import io.flutter.embedding.android.FlutterActivity
 

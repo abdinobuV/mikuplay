@@ -22,6 +22,8 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/player/presentation/screens/now_playing_screen.dart';
 import '../../shared/widgets/animated_bottom_nav.dart';
 import '../../shared/widgets/mini_player.dart';
+import '../../features/artist/presentation/screens/artist_screen.dart';
+import '../../features/artist/presentation/screens/more_artist_screen.dart';
 
 // ── Route constants ──────────────────────────────────────────
 class Routes {
@@ -37,6 +39,8 @@ class Routes {
   static const String library        = '/library';
   static const String profile        = '/profile';
   static const String nowPlaying      = '/now-playing';
+  static const String artist         = '/artist';
+  static const String moreArtist     = '/more-artist';
 }
 
 // ── Durasi transisi ──────────────────────────────────────────
@@ -215,6 +219,16 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: Routes.signupStep2,
       pageBuilder: (_, s) => _slideRight(const SignupStep2Screen(), s),
+    ),
+
+    // ── Artist routes ───────────────────────────────────────
+    GoRoute(
+      path: '${Routes.artist}/:artistName',
+      pageBuilder: (_, s) => _slideRight(ArtistScreen(artistName: s.pathParameters['artistName'] ?? ''), s),
+    ),
+    GoRoute(
+      path: Routes.moreArtist,
+      pageBuilder: (_, s) => _slideRight(const MoreArtistScreen(), s),
     ),
 
     // ── Player route (Full Screen) ──────────────────────────

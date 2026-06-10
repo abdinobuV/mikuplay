@@ -9,7 +9,9 @@
 // ============================================================
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/router/app_router.dart';
 
 // ── Data kategori artis (Figma: Cat/Vocaloid, Cat/LUKA, Cat/KAITO, Cat/GUMI)
 class _CategoryData {
@@ -205,10 +207,10 @@ class _SearchScreenState extends State<SearchScreen> {
                       Row(
                         children: [
                           Expanded(child: _CategoryCard(
-                              data: _categories[0], onTap: () {})),
+                              data: _categories[0], onTap: () => context.push('${Routes.artist}/miku'))),
                           const SizedBox(width: 17),
                           Expanded(child: _CategoryCard(
-                              data: _categories[1], onTap: () {})),
+                              data: _categories[1], onTap: () => context.push('${Routes.artist}/luka'))),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -216,10 +218,10 @@ class _SearchScreenState extends State<SearchScreen> {
                       Row(
                         children: [
                           Expanded(child: _CategoryCard(
-                              data: _categories[2], onTap: () {})),
+                              data: _categories[2], onTap: () => context.push('${Routes.artist}/kaito'))),
                           const SizedBox(width: 17),
                           Expanded(child: _CategoryCard(
-                              data: _categories[3], onTap: () {})),
+                              data: _categories[3], onTap: () => context.push('${Routes.artist}/gumi'))),
                         ],
                       ),
                     ],
@@ -231,7 +233,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () => context.push(Routes.moreArtist),
                     child: Container(
                       height: 61,
                       decoration: BoxDecoration(

@@ -1,13 +1,3 @@
-// ============================================================
-// FILE INI DISIMPAN DI:
-// lib/features/library/presentation/screens/library_screen.dart
-//
-// BUAT FOLDER JIKA BELUM ADA:
-// lib/features/library/
-// lib/features/library/presentation/
-// lib/features/library/presentation/screens/
-// ============================================================
-
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
@@ -18,7 +8,7 @@ enum _FilterTab { all, playlist, album, favorites }
 class _PlaylistData {
   final String name;
   final String songCount;
-  final Color  thumbColor; // warna icon & border thumbnail
+  final Color thumbColor; // warna icon & border thumbnail
   const _PlaylistData({
     required this.name,
     required this.songCount,
@@ -73,9 +63,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
         children: [
           // ── Dekorasi kanan atas (Figma: left=252, top=-40, size=202) ──
           Positioned(
-            left: 252, top: -40,
+            left: 252,
+            top: -40,
             child: Container(
-              width: 202, height: 202,
+              width: 202,
+              height: 202,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.tealOp(0.05),
@@ -112,7 +104,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           // TODO: buka dialog buat playlist baru
                         },
                         child: Container(
-                          width: 34, height: 34,
+                          width: 34,
+                          height: 34,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: AppColors.teal,
@@ -138,29 +131,29 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       _FilterPill(
                         label: 'All',
                         isActive: _activeFilter == _FilterTab.all,
-                        onTap: () => setState(
-                                () => _activeFilter = _FilterTab.all),
+                        onTap: () =>
+                            setState(() => _activeFilter = _FilterTab.all),
                       ),
                       const SizedBox(width: 10),
                       _FilterPill(
                         label: 'Playlist',
                         isActive: _activeFilter == _FilterTab.playlist,
-                        onTap: () => setState(
-                                () => _activeFilter = _FilterTab.playlist),
+                        onTap: () =>
+                            setState(() => _activeFilter = _FilterTab.playlist),
                       ),
                       const SizedBox(width: 10),
                       _FilterPill(
                         label: 'Album',
                         isActive: _activeFilter == _FilterTab.album,
-                        onTap: () => setState(
-                                () => _activeFilter = _FilterTab.album),
+                        onTap: () =>
+                            setState(() => _activeFilter = _FilterTab.album),
                       ),
                       const SizedBox(width: 10),
                       _FilterPill(
                         label: 'Favorites',
                         isActive: _activeFilter == _FilterTab.favorites,
                         onTap: () => setState(
-                                () => _activeFilter = _FilterTab.favorites),
+                            () => _activeFilter = _FilterTab.favorites),
                       ),
                     ],
                   ),
@@ -195,8 +188,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
 // ── Filter pill (Figma: h=30, rounded=99) ──────────────────────
 class _FilterPill extends StatelessWidget {
-  final String       label;
-  final bool         isActive;
+  final String label;
+  final bool isActive;
   final VoidCallback onTap;
 
   const _FilterPill({
@@ -240,7 +233,7 @@ class _FilterPill extends StatelessWidget {
 // ── Playlist item (Figma: h=69, rounded=14, bg=card) ───────────
 class _PlaylistItem extends StatelessWidget {
   final _PlaylistData data;
-  final VoidCallback  onTap;
+  final VoidCallback onTap;
 
   const _PlaylistItem({required this.data, required this.onTap});
 
@@ -264,7 +257,8 @@ class _PlaylistItem extends StatelessWidget {
 
             // ── Thumbnail icon (Figma: size=48, rounded=10, colored)
             Container(
-              width: 48, height: 48,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: data.thumbColor.withAlpha((0.2 * 255).toInt()),
                 borderRadius: BorderRadius.circular(10),
