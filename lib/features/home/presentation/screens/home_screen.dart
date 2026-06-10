@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/audio_player_service.dart';
 import '../../../../core/models/song_model.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/router/app_router.dart';
+import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/firestore_service.dart';
 
 class _TrackData {
   final String id;
@@ -99,6 +103,7 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.navy,
+      drawer: const _ProfileDrawer(),
       body: Stack(
         children: [
           // Dekorasi kanan atas (khusus tab Home)
@@ -231,20 +236,8 @@ class _Navbar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Row(
           children: [
-            Container(
-              width: 39, height: 39,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.tealOp(0.3),
-                border: Border.all(color: AppColors.tealOp(0.5), width: 1),
-              ),
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/images/avatar.png',
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal),
-                ),
-              ),
+            _AnimatedAvatar(
+              onTap: () => Scaffold.of(context).openDrawer(),
             ),
             const SizedBox(width: 12),
             const Text(
@@ -508,3 +501,228 @@ class _TrackRow extends StatelessWidget {
     return Center(child: Icon(Icons.music_note_rounded, size: 18, color: AppColors.tealOp(0.6)));
   }
 }
+
+class _AnimatedAvatar extends StatefulWidget {
+  final VoidCallback onTap;
+  const _AnimatedAvatar({required this.onTap});
+
+  @override
+  State<_AnimatedAvatar> createState() => _AnimatedAvatarState();
+}
+
+class _AnimatedAvatarState extends State<_AnimatedAvatar> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _controller.reverse(),
+      behavior: HitTestBehavior.opaque,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          width: 39, height: 39,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            // Fallback to withOpacity if tealOp is not static, but it seems to be defined.
+            // Using withOpacity to be safe if AppColors.tealOp is not available here. Wait, it was used above!
+            // But let's just copy what was there:
+            color: AppColors.tealOp(0.3),
+            border: Border.all(color: AppColors.tealOp(0.5), width: 1),
+          ),
+          child: ClipOval(
+            child: Image.asset(
+              'assets/images/avatar.png',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileDrawer extends StatelessWidget {
+  const _ProfileDrawer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: AppColors.navy,
+      child: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: AppColors.tealOp(0.2))),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 60, height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.tealOp(0.8), width: 2),
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/avatar.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal, size: 30),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hey, Abdi',
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.white),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'abdi@mikuplay.com',
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.sky),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                children: [
+                  _DrawerItem(
+                    icon: Icons.person_outline,
+                    title: 'Profile',
+                    onTap: () {
+                      Scaffold.of(context).closeDrawer();
+                      context.go(Routes.profile);
+                    },
+                  ),
+                  _DrawerItem(
+                    icon: Icons.history,
+                    title: 'History',
+                    onTap: () {
+                      Scaffold.of(context).closeDrawer();
+                      context.push(Routes.history);
+                    },
+                  ),
+                  _DrawerItem(
+                    icon: Icons.settings_outlined,
+                    title: 'Settings',
+                    onTap: () {
+                      Scaffold.of(context).closeDrawer();
+                      context.push(Routes.settings);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const Divider(color: Colors.white10, height: 1),
+            _DrawerItem(
+              icon: Icons.logout,
+              title: 'Log out',
+              color: AppColors.red,
+              onTap: () {
+                Scaffold.of(context).closeDrawer();
+                showDialog(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    backgroundColor: AppColors.card,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: AppColors.deepCyanOp(0.2)),
+                    ),
+                    title: const Text(
+                      'Sign Out',
+                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700, color: AppColors.white),
+                    ),
+                    content: Text(
+                      'Are you sure you want to sign out of MikuPlay?',
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.skyOp(0.8)),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: Text('Cancel', style: TextStyle(color: AppColors.skyOp(0.7))),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          Navigator.of(dialogContext).pop();
+                          await AuthService.instance.signOut();
+                          await FirestoreService.instance.clearLocalCache();
+                          if (context.mounted) context.go(Routes.login);
+                        },
+                        child: const Text('Sign Out', style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DrawerItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _DrawerItem({
+    required this.icon,
+    required this.title,
+    this.color = AppColors.white,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+      leading: Icon(icon, color: color == AppColors.white ? AppColors.tealOp(0.8) : color, size: 24),
+      title: Text(
+        title,
+        style: TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w500, color: color),
+      ),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+  }
+}
+

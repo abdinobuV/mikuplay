@@ -24,6 +24,9 @@ import '../../shared/widgets/animated_bottom_nav.dart';
 import '../../shared/widgets/mini_player.dart';
 import '../../features/artist/presentation/screens/artist_screen.dart';
 import '../../features/artist/presentation/screens/more_artist_screen.dart';
+import '../../features/profile/presentation/screens/play_history_screen.dart';
+import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../../features/profile/presentation/screens/equalizer_screen.dart';
 
 // ── Route constants ──────────────────────────────────────────
 class Routes {
@@ -41,6 +44,9 @@ class Routes {
   static const String nowPlaying      = '/now-playing';
   static const String artist         = '/artist';
   static const String moreArtist     = '/more-artist';
+  static const String history        = '/profile/history';
+  static const String settings       = '/profile/settings';
+  static const String equalizer      = '/profile/settings/eq';
 }
 
 // ── Durasi transisi ──────────────────────────────────────────
@@ -229,6 +235,18 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: Routes.moreArtist,
       pageBuilder: (_, s) => _slideRight(const MoreArtistScreen(), s),
+    ),
+    GoRoute(
+      path: Routes.history,
+      pageBuilder: (_, s) => _slideRight(const PlayHistoryScreen(), s),
+    ),
+    GoRoute(
+      path: Routes.settings,
+      pageBuilder: (_, s) => _slideRight(const SettingsScreen(), s),
+    ),
+    GoRoute(
+      path: Routes.equalizer,
+      pageBuilder: (_, s) => _slideRight(const EqualizerScreen(), s),
     ),
 
     // ── Player route (Full Screen) ──────────────────────────

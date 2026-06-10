@@ -109,7 +109,7 @@ class ProfileScreen extends StatelessWidget {
                         child: _MenuItem(
                           data: _menuItems[i],
                           onTap: () {
-                            // TODO: context.push(_menuItems[i].route);
+                            context.push(_menuItems[i].route);
                           },
                         ),
                       )),
