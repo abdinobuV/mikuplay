@@ -1,9 +1,3 @@
-// ============================================================
-// FILE INI DISIMPAN DI:
-// lib/core/router/app_router.dart
-// GANTI SELURUH ISI FILE LAMA
-// ============================================================
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,6 +21,9 @@ import '../../features/artist/presentation/screens/more_artist_screen.dart';
 import '../../features/profile/presentation/screens/play_history_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
 import '../../features/profile/presentation/screens/equalizer_screen.dart';
+import '../../features/profile/presentation/screens/help_support_screen.dart';
+import '../../features/profile/presentation/screens/favorite_songs_screen.dart';
+import '../../features/profile/presentation/screens/offline_downloads_screen.dart';
 import '../../features/player/presentation/screens/song_detail_screen.dart';
 import '../../features/player/presentation/screens/up_next_screen.dart';
 import '../../features/player/presentation/screens/lyrics_screen.dart';
@@ -35,33 +32,36 @@ import '../../core/models/song_model.dart';
 // ── Route constants ──────────────────────────────────────────
 class Routes {
   Routes._();
-  static const String splash         = '/';
-  static const String onboarding     = '/onboarding';
-  static const String login          = '/login';
+  static const String splash = '/';
+  static const String onboarding = '/onboarding';
+  static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
-  static const String signupStep1    = '/signup/step1';
-  static const String signupStep2    = '/signup/step2';
-  static const String home           = '/home';
-  static const String search         = '/search';
-  static const String library        = '/library';
-  static const String profile        = '/profile';
-  static const String nowPlaying      = '/now-playing';
-  static const String artist         = '/artist';
-  static const String moreArtist     = '/more-artist';
-  static const String history        = '/profile/history';
-  static const String settings       = '/profile/settings';
-  static const String equalizer      = '/profile/settings/eq';
-  static const String songDetail     = '/song-detail';
-  static const String upNext         = '/up-next';
-  static const String lyrics         = '/lyrics';
+  static const String signupStep1 = '/signup/step1';
+  static const String signupStep2 = '/signup/step2';
+  static const String home = '/home';
+  static const String search = '/search';
+  static const String library = '/library';
+  static const String profile = '/profile';
+  static const String nowPlaying = '/now-playing';
+  static const String artist = '/artist';
+  static const String moreArtist = '/more-artist';
+  static const String history = '/profile/history';
+  static const String settings = '/profile/settings';
+  static const String equalizer = '/profile/settings/eq';
+  static const String help = '/profile/help';
+  static const String favorites = '/profile/favorites';
+  static const String downloads = '/profile/downloads';
+  static const String songDetail = '/song-detail';
+  static const String upNext = '/up-next';
+  static const String lyrics = '/lyrics';
 }
 
 // ── Durasi transisi ──────────────────────────────────────────
-const _fast   = Duration(milliseconds: 280);
+const _fast = Duration(milliseconds: 280);
 const _normal = Duration(milliseconds: 370);
-const _slow   = Duration(milliseconds: 460);
-const _curve  = Curves.fastOutSlowIn;
-const _decel  = Curves.decelerate;
+const _slow = Duration(milliseconds: 460);
+const _curve = Curves.fastOutSlowIn;
+const _decel = Curves.decelerate;
 
 // ── Transition builders ───────────────────────────────────────
 
@@ -74,8 +74,7 @@ CustomTransitionPage<T> _fade<T>(Widget child, GoRouterState s) =>
       reverseTransitionDuration: _fast,
       transitionsBuilder: (_, anim, __, child) => FadeTransition(
         opacity: CurvedAnimation(
-            parent: anim,
-            curve: const Interval(0, 1, curve: Curves.easeIn)),
+            parent: anim, curve: const Interval(0, 1, curve: Curves.easeIn)),
         child: child,
       ),
     );
@@ -89,10 +88,12 @@ CustomTransitionPage<T> _slideRight<T>(Widget child, GoRouterState s) =>
       reverseTransitionDuration: const Duration(milliseconds: 250),
       transitionsBuilder: (_, anim, __, child) {
         final slide = Tween<Offset>(
-          begin: const Offset(1, 0), end: Offset.zero,
+          begin: const Offset(1, 0),
+          end: Offset.zero,
         ).animate(CurvedAnimation(parent: anim, curve: _curve));
         final fade = Tween<double>(begin: 0, end: 1).animate(
-          CurvedAnimation(parent: anim,
+          CurvedAnimation(
+              parent: anim,
               curve: const Interval(0, 0.5, curve: Curves.easeIn)),
         );
         return FadeTransition(
@@ -112,12 +113,12 @@ CustomTransitionPage<T> _scaleFade<T>(Widget child, GoRouterState s) =>
         final scale = Tween<double>(begin: 0.96, end: 1.0)
             .animate(CurvedAnimation(parent: anim, curve: _decel));
         final fade = Tween<double>(begin: 0, end: 1).animate(
-          CurvedAnimation(parent: anim,
+          CurvedAnimation(
+              parent: anim,
               curve: const Interval(0, 0.75, curve: Curves.easeIn)),
         );
         return FadeTransition(
-            opacity: fade,
-            child: ScaleTransition(scale: scale, child: child));
+            opacity: fade, child: ScaleTransition(scale: scale, child: child));
       },
     );
 
@@ -130,10 +131,12 @@ CustomTransitionPage<T> _slideUp<T>(Widget child, GoRouterState s) =>
       reverseTransitionDuration: _normal,
       transitionsBuilder: (_, anim, __, child) {
         final slide = Tween<Offset>(
-          begin: const Offset(0, 0.06), end: Offset.zero,
+          begin: const Offset(0, 0.06),
+          end: Offset.zero,
         ).animate(CurvedAnimation(parent: anim, curve: _decel));
         final fade = Tween<double>(begin: 0, end: 1).animate(
-          CurvedAnimation(parent: anim,
+          CurvedAnimation(
+              parent: anim,
               curve: const Interval(0, 0.65, curve: Curves.easeIn)),
         );
         return FadeTransition(
@@ -165,15 +168,15 @@ final GoRouter appRouter = GoRouter(
   // ── REDIRECT LOGIC ─────────────────────────────────────────
   // Berjalan setiap kali auth state berubah atau navigasi terjadi.
   redirect: (context, state) {
-    final user       = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser;
     final isLoggedIn = user != null;
-    final loc        = state.uri.toString();
+    final loc = state.uri.toString();
 
-    final isSplash       = loc == Routes.splash;
-    final isSignupPage   = loc.startsWith('/signup');
+    final isSplash = loc == Routes.splash;
+    final isSignupPage = loc.startsWith('/signup');
     final isBaseAuthPage = loc == Routes.onboarding ||
-                           loc == Routes.login ||
-                           loc == Routes.forgotPassword;
+        loc == Routes.login ||
+        loc == Routes.forgotPassword;
 
     // ── Case: NOT LOGGED IN ──
     if (!isLoggedIn) {
@@ -229,7 +232,8 @@ final GoRouter appRouter = GoRouter(
     // ── Artist routes ───────────────────────────────────────
     GoRoute(
       path: '${Routes.artist}/:artistName',
-      pageBuilder: (_, s) => _slideRight(ArtistScreen(artistName: s.pathParameters['artistName'] ?? ''), s),
+      pageBuilder: (_, s) => _slideRight(
+          ArtistScreen(artistName: s.pathParameters['artistName'] ?? ''), s),
     ),
     GoRoute(
       path: Routes.moreArtist,
@@ -247,6 +251,18 @@ final GoRouter appRouter = GoRouter(
       path: Routes.equalizer,
       pageBuilder: (_, s) => _slideRight(const EqualizerScreen(), s),
     ),
+    GoRoute(
+      path: Routes.help,
+      pageBuilder: (_, s) => _slideRight(const HelpSupportScreen(), s),
+    ),
+    GoRoute(
+      path: Routes.favorites,
+      pageBuilder: (_, s) => _slideRight(const FavoriteSongsScreen(), s),
+    ),
+    GoRoute(
+      path: Routes.downloads,
+      pageBuilder: (_, s) => _slideRight(const OfflineDownloadsScreen(), s),
+    ),
 
     // ── Player route (Full Screen) ──────────────────────────
     GoRoute(
@@ -259,7 +275,8 @@ final GoRouter appRouter = GoRouter(
           const end = Offset.zero;
           const curve = Curves.ease;
 
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
           return SlideTransition(
             position: animation.drive(tween),
@@ -290,8 +307,10 @@ final GoRouter appRouter = GoRouter(
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
           const curve = Curves.easeOutCubic;
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-          return SlideTransition(position: animation.drive(tween), child: child);
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          return SlideTransition(
+              position: animation.drive(tween), child: child);
         },
       ),
     ),
@@ -302,7 +321,7 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state, child) {
         int tab = 0;
         final loc = state.uri.toString();
-        if (loc.startsWith(Routes.search))  tab = 1;
+        if (loc.startsWith(Routes.search)) tab = 1;
         if (loc.startsWith(Routes.library)) tab = 2;
         if (loc.startsWith(Routes.profile)) tab = 3;
 
@@ -311,22 +330,34 @@ final GoRouter appRouter = GoRouter(
           child: child,
           onNavTap: (i) {
             switch (i) {
-              case 0: context.go(Routes.home);    break;
-              case 1: context.go(Routes.search);  break;
-              case 2: context.go(Routes.library); break;
-              case 3: context.go(Routes.profile); break;
+              case 0:
+                context.go(Routes.home);
+                break;
+              case 1:
+                context.go(Routes.search);
+                break;
+              case 2:
+                context.go(Routes.library);
+                break;
+              case 3:
+                context.go(Routes.profile);
+                break;
             }
           },
         );
       },
       routes: [
-        GoRoute(path: Routes.home,
+        GoRoute(
+            path: Routes.home,
             pageBuilder: (_, s) => _slideUp(const HomeScreen(), s)),
-        GoRoute(path: Routes.search,
+        GoRoute(
+            path: Routes.search,
             pageBuilder: (_, s) => _fade(const SearchScreen(), s)),
-        GoRoute(path: Routes.library,
+        GoRoute(
+            path: Routes.library,
             pageBuilder: (_, s) => _fade(const LibraryScreen(), s)),
-        GoRoute(path: Routes.profile,
+        GoRoute(
+            path: Routes.profile,
             pageBuilder: (_, s) => _fade(const ProfileScreen(), s)),
       ],
     ),
@@ -354,19 +385,19 @@ class _MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFF03045E),
-    body: Stack(
-      children: [
-        child,
-        const Positioned(
-          left: 0,
-          right: 0,
-          bottom: 10, // Memberi jarak dari bottom nav
-          child: MiniPlayer(),
+        backgroundColor: const Color(0xFF03045E),
+        body: Stack(
+          children: [
+            child,
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 10, // Memberi jarak dari bottom nav
+              child: MiniPlayer(),
+            ),
+          ],
         ),
-      ],
-    ),
-    bottomNavigationBar: AnimatedBottomNav(
-        selectedIndex: activeTab, onTap: onNavTap),
-  );
+        bottomNavigationBar:
+            AnimatedBottomNav(selectedIndex: activeTab, onTap: onNavTap),
+      );
 }
