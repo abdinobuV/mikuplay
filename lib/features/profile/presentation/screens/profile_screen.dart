@@ -13,14 +13,15 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/services/auth_service.dart';
+import 'dart:io';
 import '../../../../core/services/firestore_service.dart';
 
 // ── Data menu item profil (Figma: 5 menu item)
 class _MenuData {
-  final String    label;
-  final IconData? icon;        // icon Material
-  final String?   iconEmoji;   // emoji fallback jika tidak ada icon
-  final String    route;       // route tujuan
+  final String label;
+  final IconData? icon; // icon Material
+  final String? iconEmoji; // emoji fallback jika tidak ada icon
+  final String route; // route tujuan
   const _MenuData({
     required this.label,
     this.icon,
@@ -68,9 +69,11 @@ class ProfileScreen extends StatelessWidget {
         children: [
           // ── Dekorasi kiri (Figma: left=-60, top=61, size=262) ──
           Positioned(
-            left: -60, top: 61,
+            left: -60,
+            top: 61,
             child: Container(
-              width: 262, height: 262,
+              width: 262,
+              height: 262,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.tealOp(0.06),
@@ -79,9 +82,11 @@ class ProfileScreen extends StatelessWidget {
           ),
           // ── Dekorasi kanan bawah (Figma: left=262, top=404, size=202)
           Positioned(
-            left: 262, top: 404,
+            left: 262,
+            top: 404,
             child: Container(
-              width: 202, height: 202,
+              width: 202,
+              height: 202,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.tealOp(0.04),
@@ -100,19 +105,22 @@ class ProfileScreen extends StatelessWidget {
 
                 // ── Menu items + logout
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   child: Column(
                     children: [
                       // Menu items
-                      ...List.generate(_menuItems.length, (i) => Padding(
-                        padding: const EdgeInsets.only(bottom: 9),
-                        child: _MenuItem(
-                          data: _menuItems[i],
-                          onTap: () {
-                            context.push(_menuItems[i].route);
-                          },
-                        ),
-                      )),
+                      ...List.generate(
+                          _menuItems.length,
+                          (i) => Padding(
+                                padding: const EdgeInsets.only(bottom: 9),
+                                child: _MenuItem(
+                                  data: _menuItems[i],
+                                  onTap: () {
+                                    context.push(_menuItems[i].route);
+                                  },
+                                ),
+                              )),
 
                       const SizedBox(height: 24),
 
@@ -124,9 +132,10 @@ class ProfileScreen extends StatelessWidget {
                             builder: (_) => _LogOutDialog(
                               onConfirm: () async {
                                 await AuthService.instance.signOut();
-                                await FirestoreService.instance.clearLocalCache();
+                                await FirestoreService.instance
+                                    .clearLocalCache();
                                 if (context.mounted) {
-                                  context.go(Routes.login);
+                                  context.go(Routes.onboarding);
                                 }
                               },
                             ),
@@ -173,13 +182,14 @@ class _ProfileHeader extends StatelessWidget {
           // TODO: ganti Container dalam ClipOval dengan
           //       Image.asset('assets/images/avatar.png') atau
           //       Image.network(userPhotoUrl)
-          //       setelah kamu punya foto profil
+          //       setelah punya foto profil
           Stack(
             alignment: Alignment.center,
             children: [
               // Ring teal luar (Figma: size=89)
               Container(
-                width: 89, height: 89,
+                width: 89,
+                height: 89,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.tealOp(0.15),
@@ -189,30 +199,23 @@ class _ProfileHeader extends StatelessWidget {
                   ),
                 ),
               ),
-          // Avatar (Figma: size=71, foto user)
-          ClipOval(
-            child: Container(
-              width: 71, height: 71,
-              color: AppColors.card,
-              child: Image.asset(
-                'assets/images/avatar.png',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.person_rounded,
-                  size: 40,
-                  color: AppColors.sky,
+              // Avatar (Figma: size=71, foto user)
+              ClipOval(
+                child: Container(
+                  width: 71,
+                  height: 71,
+                  color: AppColors.card,
+                  child: _buildAvatarImage(),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
           const SizedBox(height: 14),
 
           // ── Nama (Figma: 18.2px semi bold)
-          const Text(
-            'Abdi Raihan',
-            style: TextStyle(
+          Text(
+            AuthService.instance.currentUser?.displayName ?? 'MikuFan',
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -222,9 +225,9 @@ class _ProfileHeader extends StatelessWidget {
           const SizedBox(height: 4),
 
           // ── Handle (Figma: 12.1px, teal)
-          const Text(
-            '@abdiMikuFan',
-            style: TextStyle(
+          Text(
+            '@${AuthService.instance.currentUser?.displayName?.toLowerCase().replaceAll(' ', '') ?? 'mikufan'}',
+            style: const TextStyle(
               fontFamily: 'Inter',
               fontSize: 12,
               color: AppColors.teal,
@@ -236,14 +239,45 @@ class _ProfileHeader extends StatelessWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _StatItem(value: '247',  label: 'Songs'),
+              _StatItem(value: '247', label: 'Songs'),
               _StatDivider(),
-              _StatItem(value: '18',   label: 'Playlist'),
+              _StatItem(value: '18', label: 'Playlist'),
               _StatDivider(),
               _StatItem(value: '1.2K', label: 'Favorites'),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAvatarImage() {
+    final photoUrl = AuthService.instance.currentUser?.photoURL;
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      if (photoUrl.startsWith('http')) {
+        return Image.network(
+          photoUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.person_rounded, size: 40, color: AppColors.sky),
+        );
+      } else {
+        return Image.file(
+          File(photoUrl),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.person_rounded, size: 40, color: AppColors.sky),
+        );
+      }
+    }
+
+    return Image.asset(
+      'assets/images/avatar.png',
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => const Icon(
+        Icons.person_rounded,
+        size: 40,
+        color: AppColors.sky,
       ),
     );
   }
@@ -254,7 +288,8 @@ class _StatDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 1, height: 30,
+      width: 1,
+      height: 30,
       color: AppColors.whiteOp(0.1),
     );
   }
@@ -297,7 +332,7 @@ class _StatItem extends StatelessWidget {
 
 // ── Menu item row (Figma: h=57, rounded=12, bg=card) ─────────────
 class _MenuItem extends StatelessWidget {
-  final _MenuData    data;
+  final _MenuData data;
   final VoidCallback onTap;
   const _MenuItem({required this.data, required this.onTap});
 
@@ -322,7 +357,8 @@ class _MenuItem extends StatelessWidget {
 
             // ── Icon circle (Figma: size=34, rounded=99, bg=teal 12%)
             Container(
-              width: 34, height: 34,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.tealOp(0.12),
@@ -335,12 +371,12 @@ class _MenuItem extends StatelessWidget {
                 child: data.icon != null
                     ? Icon(data.icon, size: 18, color: AppColors.teal)
                     : Text(
-                  data.iconEmoji!,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: AppColors.teal,
-                  ),
-                ),
+                        data.iconEmoji!,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: AppColors.teal,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(width: 12),
@@ -385,7 +421,8 @@ class _LogOutButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          width: 209, height: 42,
+          width: 209,
+          height: 42,
           decoration: BoxDecoration(
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(17),

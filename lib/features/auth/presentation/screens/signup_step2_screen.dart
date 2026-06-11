@@ -58,10 +58,9 @@ class _SignupStep2ScreenState extends State<SignupStep2Screen> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Simpan foto profil jika ada (TODO: upload ke Storage jika perlu)
+      // 1. Simpan foto profil lokal
       if (_pickedImage != null) {
-        // Untuk saat ini simpan path lokal dulu atau skip upload
-        // await AuthService.instance.updateProfile(photoUrl: _pickedImage!.path);
+        await AuthService.instance.updateProfile(photoUrl: _pickedImage!.path);
       }
 
       // 2. Tandai onboarding selesai agar tidak kena redirect balik

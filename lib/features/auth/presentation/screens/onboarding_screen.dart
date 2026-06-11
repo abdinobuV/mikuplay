@@ -85,9 +85,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (user != null) {
       // Tandai sudah selesai agar tidak dilempar balik oleh router
       await FirestoreService.instance.markOnboardingDone(user.uid);
-    }
-    if (mounted) {
-      context.go(Routes.home);
+      if (mounted) context.go(Routes.home);
+    } else {
+      // Jika belum login, masuk ke login
+      if (mounted) context.go(Routes.login);
     }
   }
 

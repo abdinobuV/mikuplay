@@ -199,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen>
                     // Sign up link
                     Center(
                       child: GestureDetector(
-                        onTap: () => context.push(Routes.signupStep1),
+                        onTap: () => context.go(Routes.signupStep1),
                         child: RichText(
                           text: TextSpan(
                             style: TextStyle(fontSize: 13,

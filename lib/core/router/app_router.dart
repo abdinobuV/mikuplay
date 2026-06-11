@@ -164,25 +164,25 @@ final GoRouter appRouter = GoRouter(
 
   // ── REDIRECT LOGIC ─────────────────────────────────────────
   // Berjalan setiap kali auth state berubah atau navigasi terjadi.
-  redirect: (context, state) async {
+  redirect: (context, state) {
     final user       = FirebaseAuth.instance.currentUser;
     final isLoggedIn = user != null;
-    final loc        = state.matchedLocation;
+    final loc        = state.uri.toString();
 
     final isSplash       = loc == Routes.splash;
     final isSignupPage   = loc.startsWith('/signup');
-    final isBaseAuthPage = isSplash ||
-                           loc == Routes.onboarding ||
+    final isBaseAuthPage = loc == Routes.onboarding ||
                            loc == Routes.login ||
                            loc == Routes.forgotPassword;
 
     // ── Case: NOT LOGGED IN ──
     if (!isLoggedIn) {
-      // Jika mencoba akses halaman utama/private, lempar ke login
-      if (!isBaseAuthPage && !isSignupPage) {
-        return Routes.login;
+      // Biarkan akses ke halaman auth, splash, dan signup
+      if (isSplash || isBaseAuthPage || isSignupPage) {
+        return null;
       }
-      return null;
+      // Jika mencoba akses halaman utama/private, lempar ke onboarding
+      return Routes.onboarding;
     }
 
     // ── Case: LOGGED IN ──
@@ -190,16 +190,8 @@ final GoRouter appRouter = GoRouter(
       // Biarkan Splash dan Signup tetap tampil tanpa interupsi
       if (isSplash || isSignupPage) return null;
 
-      // Cek apakah onboarding sudah selesai
-      final done = await FirestoreService.instance.isOnboardingDone(user.uid);
-
-      // Jika belum selesai dan tidak sedang di onboarding, paksa ke onboarding
-      if (!done && loc != Routes.onboarding) {
-        return Routes.onboarding;
-      }
-
-      // Jika sudah selesai tapi masih di halaman entry (login/onboarding), lempar ke home
-      if (done && (loc == Routes.login || loc == Routes.onboarding)) {
+      // Jika sudah login tapi mencoba akses login/onboarding, paksa ke home
+      if (isBaseAuthPage) {
         return Routes.home;
       }
     }
