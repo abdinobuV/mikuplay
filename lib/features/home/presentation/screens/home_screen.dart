@@ -121,7 +121,9 @@ class HomeScreen extends StatelessWidget {
           Column(
             children: [
               const SizedBox(height: 44),
-              _Navbar(onNotificationTap: () {}),
+              _Navbar(onNotificationTap: () {
+                context.push(Routes.notifications);
+              }),
               Expanded(
                 child: ListView(
                   physics: const ClampingScrollPhysics(),

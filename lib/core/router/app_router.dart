@@ -24,6 +24,7 @@ import '../../features/profile/presentation/screens/equalizer_screen.dart';
 import '../../features/profile/presentation/screens/help_support_screen.dart';
 import '../../features/profile/presentation/screens/favorite_songs_screen.dart';
 import '../../features/profile/presentation/screens/offline_downloads_screen.dart';
+import '../../features/home/presentation/screens/notification_screen.dart';
 import '../../features/player/presentation/screens/song_detail_screen.dart';
 import '../../features/player/presentation/screens/up_next_screen.dart';
 import '../../features/player/presentation/screens/lyrics_screen.dart';
@@ -51,6 +52,7 @@ class Routes {
   static const String help = '/profile/help';
   static const String favorites = '/profile/favorites';
   static const String downloads = '/profile/downloads';
+  static const String notifications = '/notifications';
   static const String songDetail = '/song-detail';
   static const String upNext = '/up-next';
   static const String lyrics = '/lyrics';
@@ -262,6 +264,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: Routes.downloads,
       pageBuilder: (_, s) => _slideRight(const OfflineDownloadsScreen(), s),
+    ),
+    GoRoute(
+      path: Routes.notifications,
+      pageBuilder: (_, s) => _slideRight(const NotificationScreen(), s),
     ),
 
     // ── Player route (Full Screen) ──────────────────────────
