@@ -1,9 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/audio_player_service.dart';
 import '../../../../core/models/song_model.dart';
+import '../../../../core/router/app_router.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   const NowPlayingScreen({super.key});
@@ -23,7 +26,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       stream: audioService.currentSongStream,
       builder: (context, songSnapshot) {
         final song = songSnapshot.data;
-        if (song == null) return const Scaffold(body: Center(child: Text('No song playing')));
+        if (song == null) return const Scaffold(backgroundColor: AppColors.navy, body: Center(child: Text('No song playing', style: TextStyle(color: Colors.white))));
 
         return Scaffold(
           backgroundColor: AppColors.navy,
@@ -31,21 +34,38 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             children: [
               // Background Decoration
               Positioned(
-                top: -150,
-                right: -100,
+                top: -100,
+                left: -100,
                 child: Container(
                   width: 400,
                   height: 400,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.tealOp(0.03),
+                    color: AppColors.tealOp(0.1),
+                    gradient: RadialGradient(
+                      colors: [AppColors.tealOp(0.2), Colors.transparent],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -150,
+                right: -100,
+                child: Container(
+                  width: 500,
+                  height: 500,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [Color(0xFF0609C4).withOpacity(0.3), Colors.transparent],
+                    ),
                   ),
                 ),
               ),
               SafeArea(
                 child: Column(
                   children: [
-                    // Top Bar (Custom App Bar)
+                    // Top Bar
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                       child: Row(
@@ -53,25 +73,29 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                         children: [
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
-                            child: Row(
-                              children: [
-                                Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.whiteOp(0.7), size: 20),
-                                const SizedBox(width: 8),
-                                Text('Back', style: TextStyle(color: AppColors.whiteOp(0.7), fontSize: 16)),
-                              ],
+                            behavior: HitTestBehavior.opaque,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_back, color: AppColors.whiteOp(0.8), size: 20),
+                                  const SizedBox(width: 8),
+                                  Text('Back', style: TextStyle(color: AppColors.whiteOp(0.8), fontSize: 16)),
+                                ],
+                              ),
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.more_horiz_rounded, color: AppColors.whiteOp(0.7), size: 28),
-                            onPressed: () {},
+                            icon: Icon(Icons.more_horiz_rounded, color: AppColors.whiteOp(0.8), size: 28),
+                            onPressed: () => context.push(Routes.upNext),
                           ),
                         ],
                       ),
                     ),
 
-                    const Spacer(flex: 1),
+                    const Spacer(flex: 2),
 
-                    // Circular Album Art (Sesuai Figma)
+                    // Circular Album Art
                     Center(
                       child: Container(
                         width: 280,
@@ -89,8 +113,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.5),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
+                                  blurRadius: 25,
+                                  spreadRadius: 5,
+                                  offset: const Offset(0, 15),
                                 ),
                               ],
                             ),
@@ -104,45 +129,47 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       ),
                     ),
 
-                    const Spacer(flex: 1),
+                    const Spacer(flex: 2),
 
-                    // Song Info: Title & Artist
+                    // Title, Artist, Add, Like Buttons
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                      child: Column(
-                        children: [
-                          Text(
-                            song.title,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: AppColors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${song.artist} • ${song.album}',
-                            style: TextStyle(
-                              color: AppColors.skyOp(0.7),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Action Buttons (Add & Like)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           _SmallActionButton(icon: Icons.add_rounded, onTap: () {}),
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  song.title,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'Inter',
+                                    letterSpacing: -0.5,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '${song.artist} • ${song.album}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppColors.skyOp(0.8),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Inter',
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
                           _SmallActionButton(
                             icon: _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                             onTap: () => setState(() => _isLiked = !_isLiked),
@@ -170,12 +197,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                                 progress: position,
                                 total: total,
                                 progressBarColor: AppColors.teal,
-                                baseBarColor: AppColors.whiteOp(0.1),
+                                baseBarColor: AppColors.whiteOp(0.15),
                                 thumbColor: AppColors.teal,
                                 barHeight: 4,
                                 thumbRadius: 6,
                                 thumbCanPaintOutsideBar: false,
-                                timeLabelTextStyle: TextStyle(color: AppColors.whiteOp(0.5), fontSize: 13),
+                                timeLabelTextStyle: TextStyle(color: AppColors.whiteOp(0.6), fontSize: 13, fontFamily: 'Inter'),
                                 onSeek: audioService.seek,
                               );
                             },
@@ -186,23 +213,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
                     const SizedBox(height: 24),
 
-                    // Main Controls Bar
+                    // Controls
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          // Seek Backward 10s
                           IconButton(
-                            onPressed: () => audioService.seekBackward(),
-                            icon: Icon(Icons.replay_10_rounded, color: AppColors.whiteOp(0.6), size: 28),
+                            onPressed: () {},
+                            icon: Icon(Icons.repeat_one_rounded, color: AppColors.whiteOp(0.6), size: 26),
                           ),
-                          // Previous
                           IconButton(
                             onPressed: () => audioService.skipToPrevious(),
                             icon: const Icon(Icons.skip_previous_rounded, color: AppColors.white, size: 36),
                           ),
-                          // Play/Pause
                           StreamBuilder<PlayerState>(
                             stream: audioService.playerStateStream,
                             builder: (context, stateSnapshot) {
@@ -212,9 +236,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                                 child: Container(
                                   width: 72,
                                   height: 72,
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: AppColors.teal,
+                                    boxShadow: [
+                                      BoxShadow(color: AppColors.tealOp(0.4), blurRadius: 15, offset: const Offset(0, 5)),
+                                    ],
                                   ),
                                   child: Icon(
                                     playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
@@ -225,32 +252,57 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               );
                             },
                           ),
-                          // Next
                           IconButton(
                             onPressed: () => audioService.skipToNext(),
                             icon: const Icon(Icons.skip_next_rounded, color: AppColors.white, size: 36),
                           ),
-                          // Seek Forward 10s
                           IconButton(
-                            onPressed: () => audioService.seekForward(),
-                            icon: Icon(Icons.forward_10_rounded, color: AppColors.whiteOp(0.6), size: 28),
+                            onPressed: () {},
+                            icon: Icon(Icons.shuffle_rounded, color: AppColors.whiteOp(0.6), size: 26),
                           ),
                         ],
                       ),
                     ),
 
-                    const Spacer(flex: 2),
+                    const Spacer(flex: 1),
 
-                    // Bottom Indicator
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.whiteOp(0.2),
-                        borderRadius: BorderRadius.circular(2),
+                    // Lyrics Preview Card
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: GestureDetector(
+                        onTap: () => context.push(Routes.lyrics),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                          decoration: BoxDecoration(
+                            color: AppColors.whiteOp(0.05),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.whiteOp(0.1), width: 1),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "こんなにそばにいるのに",
+                                style: TextStyle(color: AppColors.whiteOp(0.5), fontSize: 14, fontFamily: 'Inter'),
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                "どうして君は気づかないんだろう",
+                                style: TextStyle(color: AppColors.teal, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Inter'),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                "気持ちを伝えたいのに",
+                                style: TextStyle(color: AppColors.whiteOp(0.5), fontSize: 14, fontFamily: 'Inter'),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
@@ -285,9 +337,9 @@ class _SmallActionButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: active ? (color ?? AppColors.teal) : AppColors.whiteOp(0.2), width: 1.5),
-          color: active ? (color ?? AppColors.teal).withOpacity(0.1) : Colors.transparent,
+          color: active ? (color ?? AppColors.teal).withOpacity(0.15) : Colors.transparent,
         ),
-        child: Icon(icon, color: color ?? (active ? AppColors.teal : AppColors.whiteOp(0.5)), size: 24),
+        child: Icon(icon, color: color ?? (active ? AppColors.teal : AppColors.whiteOp(0.7)), size: 24),
       ),
     );
   }

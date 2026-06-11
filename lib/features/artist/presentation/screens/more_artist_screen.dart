@@ -46,7 +46,7 @@ class MoreArtistScreen extends StatelessWidget {
                   _ArtistCard(
                     name: 'Emu Otori',
                     imagePath: 'assets/images/artists/otori.png',
-                    color: const Color(0xFFE63946),
+                    color: const Color.fromARGB(255, 228, 25, 147),
                     onTap: () => context.push('/artist/otori'),
                   ),
                   const SizedBox(height: 24),

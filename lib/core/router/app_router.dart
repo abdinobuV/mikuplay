@@ -27,6 +27,10 @@ import '../../features/artist/presentation/screens/more_artist_screen.dart';
 import '../../features/profile/presentation/screens/play_history_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
 import '../../features/profile/presentation/screens/equalizer_screen.dart';
+import '../../features/player/presentation/screens/song_detail_screen.dart';
+import '../../features/player/presentation/screens/up_next_screen.dart';
+import '../../features/player/presentation/screens/lyrics_screen.dart';
+import '../../core/models/song_model.dart';
 
 // ── Route constants ──────────────────────────────────────────
 class Routes {
@@ -47,6 +51,9 @@ class Routes {
   static const String history        = '/profile/history';
   static const String settings       = '/profile/settings';
   static const String equalizer      = '/profile/settings/eq';
+  static const String songDetail     = '/song-detail';
+  static const String upNext         = '/up-next';
+  static const String lyrics         = '/lyrics';
 }
 
 // ── Durasi transisi ──────────────────────────────────────────
@@ -266,6 +273,33 @@ final GoRouter appRouter = GoRouter(
             position: animation.drive(tween),
             child: child,
           );
+        },
+      ),
+    ),
+    GoRoute(
+      path: Routes.songDetail,
+      pageBuilder: (context, state) {
+        final song = state.extra as Song?;
+        return _slideUp(SongDetailScreen(song: song), state);
+      },
+    ),
+    GoRoute(
+      path: Routes.upNext,
+      pageBuilder: (_, s) => _slideRight(const UpNextScreen(), s),
+    ),
+    GoRoute(
+      path: Routes.lyrics,
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const LyricsScreen(),
+        transitionDuration: const Duration(milliseconds: 300),
+        reverseTransitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeOutCubic;
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          return SlideTransition(position: animation.drive(tween), child: child);
         },
       ),
     ),

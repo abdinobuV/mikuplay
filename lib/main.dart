@@ -1,9 +1,3 @@
-// ============================================================
-// FILE INI DISIMPAN DI:
-// lib/main.dart
-// GANTI SELURUH ISI FILE LAMA
-// ============================================================
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -35,7 +29,7 @@ void main() async {
 
   // ── Status bar transparan (sesuai desain Figma) ────────────
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor:         Colors.transparent,
+    statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
   ));
 

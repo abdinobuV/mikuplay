@@ -31,6 +31,7 @@ class AudioPlayerService {
   Stream<Duration> get durationStream => _durationSubject.stream;
   Stream<PlayerState> get playerStateStream => _playerStateSubject.stream;
   Stream<Song?> get currentSongStream => _currentSongSubject.stream;
+  Stream<List<Song>> get playlistStream => _playlistSubject.stream;
 
   Song? get currentSong => _currentSongSubject.hasValue ? _currentSongSubject.value : null;
 

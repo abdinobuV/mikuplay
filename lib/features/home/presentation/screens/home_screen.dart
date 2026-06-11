@@ -137,17 +137,16 @@ class HomeScreen extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: _FeaturedCard(onTap: () {
-                        AudioPlayerService().setSong(
-                          const _TrackData(
-                            id: 'trending_1',
-                            title: 'Melt',
-                            artist: 'ryo',
-                            duration: '4:33',
-                            imagePath: 'melt_cover_art.png',
-                            audioUrl: 'assets/audio/melt.mp3',
-                            year: '2007',
-                          ).toSong(),
-                        );
+                        final song = const _TrackData(
+                          id: 'trending_1',
+                          title: 'Melt',
+                          artist: 'ryo',
+                          duration: '4:33',
+                          imagePath: 'melt_cover_art.png',
+                          audioUrl: 'assets/audio/melt.mp3',
+                          year: '2007',
+                        ).toSong();
+                        context.push(Routes.songDetail, extra: song);
                       }),
                     ),
                     const SizedBox(height: 20),
@@ -160,7 +159,7 @@ class HomeScreen extends StatelessWidget {
                           padding: const EdgeInsets.only(bottom: 10),
                           child: _TrackRow(
                             data: track,
-                            onTap: () => AudioPlayerService().setSong(track.toSong()),
+                            onTap: () => context.push(Routes.songDetail, extra: track.toSong()),
                           ),
                         )).toList(),
                       ),
