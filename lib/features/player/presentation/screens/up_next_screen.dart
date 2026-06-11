@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/song_model.dart';
 import '../../../../core/services/audio_player_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class UpNextScreen extends StatelessWidget {
   const UpNextScreen({super.key});
@@ -84,7 +84,10 @@ class UpNextScreen extends StatelessWidget {
                           child: ClipOval(
                             child: currentSong.imageUrl.startsWith('assets/')
                                 ? Image.asset(currentSong.imageUrl, fit: BoxFit.cover)
-                                : Image.network(currentSong.imageUrl, fit: BoxFit.cover),
+                                : CachedNetworkImage(
+                                    imageUrl: currentSong.imageUrl,
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -104,7 +107,7 @@ class UpNextScreen extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
-                              Text(
+                              const Text(
                                 'now playing',
                                 style: TextStyle(
                                   color: AppColors.teal,
@@ -199,7 +202,11 @@ class UpNextScreen extends StatelessWidget {
                                   child: ClipOval(
                                     child: song.imageUrl.startsWith('assets/')
                                         ? Image.asset(song.imageUrl, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.music_note, color: AppColors.teal))
-                                        : Image.network(song.imageUrl, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.music_note, color: AppColors.teal)),
+                                        : CachedNetworkImage(
+                                            imageUrl: song.imageUrl,
+                                            fit: BoxFit.cover,
+                                            errorWidget: (context, url, error) => const Icon(Icons.music_note, color: AppColors.teal),
+                                          ),
                                   ),
                                 ),
                                 const SizedBox(width: 16),

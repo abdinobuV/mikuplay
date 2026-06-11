@@ -267,9 +267,9 @@ class _ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.red.withOpacity(0.1),
+        color: AppColors.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.red.withOpacity(0.4)),
+        border: Border.all(color: AppColors.red.withValues(alpha: 0.4)),
       ),
       child: Row(children: [
         const Icon(Icons.error_outline_rounded, size: 16, color: AppColors.red),
@@ -302,11 +302,11 @@ class _GoogleButton extends StatelessWidget {
               ? const SizedBox(width: 18, height: 18,
               child: CircularProgressIndicator(
                   strokeWidth: 2, color: AppColors.teal))
-              : Row(mainAxisSize: MainAxisSize.min, children: [
-            const Text('G', style: TextStyle(fontSize: 16,
+              : const Row(mainAxisSize: MainAxisSize.min, children: [
+            Text('G', style: TextStyle(fontSize: 16,
                 fontWeight: FontWeight.w700, color: AppColors.teal)),
-            const SizedBox(width: 10),
-            const Text('Continue with Google',
+            SizedBox(width: 10),
+            Text('Continue with Google',
                 style: TextStyle(fontSize: 14, color: AppColors.white)),
           ]),
         ),

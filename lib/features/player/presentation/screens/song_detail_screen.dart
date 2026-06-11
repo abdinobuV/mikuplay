@@ -1,10 +1,13 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/song_model.dart';
 import '../../../../core/services/audio_player_service.dart';
+import '../../../../core/services/playlist_service.dart';
+import '../../../../core/services/download_service.dart';
 import '../../../../core/router/app_router.dart';
+import '../widgets/responsive_lyrics_view.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class SongDetailScreen extends StatefulWidget {
   final Song? song;
@@ -15,7 +18,7 @@ class SongDetailScreen extends StatefulWidget {
 }
 
 class _SongDetailScreenState extends State<SongDetailScreen> {
-  bool _isLiked = false;
+  bool _isDownloading = false;
 
   String _formatDuration(Duration d) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
@@ -28,6 +31,19 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
     if (number >= 1000000) return '${(number / 1000000).toStringAsFixed(1)}M';
     if (number >= 1000) return '${(number / 1000).toStringAsFixed(0)}K';
     return number.toString();
+  }
+
+  void _showLyrics() {
+    if (widget.song == null) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ResponsiveLyricsView(
+        song: widget.song!,
+        onClose: () => Navigator.pop(context),
+      ),
+    );
   }
 
   @override
@@ -104,7 +120,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.black.withValues(alpha: 0.5),
                               blurRadius: 30,
                               spreadRadius: 8,
                               offset: const Offset(0, 15),
@@ -114,7 +130,11 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                         child: ClipOval(
                           child: song.imageUrl.startsWith('assets/')
                               ? Image.asset(song.imageUrl, fit: BoxFit.cover)
-                              : Image.network(song.imageUrl, fit: BoxFit.cover),
+                              : CachedNetworkImage(
+                                  imageUrl: song.imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) => const Icon(Icons.music_note, color: AppColors.teal),
+                                ),
                         ),
                       ),
                     ),
@@ -159,19 +179,43 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _ActionBtn(
-                        icon: _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                        label: 'Like',
-                        color: _isLiked ? AppColors.red : null,
-                        isActive: _isLiked,
-                        onTap: () => setState(() => _isLiked = !_isLiked),
+                      StreamBuilder<bool>(
+                        stream: PlaylistService.instance.isFavorite(song.id),
+                        builder: (context, snapshot) {
+                          final isLiked = snapshot.data ?? false;
+                          return _ActionBtn(
+                            icon: isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            label: 'Like',
+                            color: isLiked ? AppColors.red : null,
+                            isActive: isLiked,
+                            onTap: () => PlaylistService.instance.toggleFavorite(song),
+                          );
+                        }
                       ),
                       const SizedBox(width: 24),
                       _ActionBtn(icon: Icons.add, label: 'Add', onTap: () {}),
                       const SizedBox(width: 24),
-                      _ActionBtn(icon: Icons.download_rounded, label: 'Download', onTap: () {}),
+                      _isDownloading 
+                          ? const SizedBox(width: 48, child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppColors.teal, strokeWidth: 2))))
+                          : _ActionBtn(
+                              icon: Icons.download_rounded, 
+                              label: 'Download', 
+                              onTap: () async {
+                                setState(() => _isDownloading = true);
+                                final success = await DownloadService.instance.downloadSong(song, null);
+                                setState(() => _isDownloading = false);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(success ? 'Download complete' : 'Download failed'),
+                                      backgroundColor: success ? AppColors.teal : AppColors.red,
+                                    )
+                                  );
+                                }
+                              }
+                            ),
                       const SizedBox(width: 24),
-                      _ActionBtn(icon: Icons.more_horiz, label: 'More', onTap: () {}),
+                      _ActionBtn(icon: Icons.lyrics_rounded, label: 'Lyrics', onTap: _showLyrics),
                     ],
                   ),
 
@@ -246,9 +290,9 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                             )
                           ],
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Icon(Icons.play_arrow_rounded, color: AppColors.navy, size: 28),
                             SizedBox(width: 8),
                             Text(
@@ -301,7 +345,7 @@ class _ActionBtn extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isActive ? (color ?? AppColors.teal).withOpacity(0.15) : AppColors.whiteOp(0.05),
+              color: isActive ? (color ?? AppColors.teal).withValues(alpha: 0.15) : AppColors.whiteOp(0.05),
               border: Border.all(
                 color: isActive ? (color ?? AppColors.teal) : AppColors.whiteOp(0.1),
                 width: 1.5,

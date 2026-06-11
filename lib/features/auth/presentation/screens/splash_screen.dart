@@ -151,7 +151,7 @@ class _SplashScreenState extends State<SplashScreen>
                     children: [
                       Text(
                         'mikuplay',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 32,
                           fontWeight: FontWeight.w700,

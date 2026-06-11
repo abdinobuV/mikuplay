@@ -9,6 +9,8 @@ class Song {
   final int plays;
   final int likedCount;
   final String year;
+  final String? lyrics;
+  final String? localPath;
 
   Song({
     required this.id,
@@ -21,6 +23,8 @@ class Song {
     this.plays = 0,
     this.likedCount = 0,
     this.year = '',
+    this.lyrics,
+    this.localPath,
   });
 
   factory Song.fromMap(Map<String, dynamic> map, String id) {
@@ -35,6 +39,8 @@ class Song {
       plays: map['plays'] ?? 0,
       likedCount: map['likedCount'] ?? 0,
       year: map['year'] ?? '',
+      lyrics: map['lyrics'],
+      localPath: map['localPath'],
     );
   }
 
@@ -49,6 +55,8 @@ class Song {
       'plays': plays,
       'likedCount': likedCount,
       'year': year,
+      'lyrics': lyrics,
+      'localPath': localPath,
     };
   }
 }

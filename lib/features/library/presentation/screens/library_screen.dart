@@ -158,7 +158,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
 
                 // ── Playlist List ───────────────────────────────────
                 Expanded(

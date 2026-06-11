@@ -17,14 +17,14 @@ class SettingsScreen extends StatelessWidget {
             left: -60, top: 61,
             child: Container(
               width: 262, height: 262,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.teal.withOpacity(0.06)),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.teal.withValues(alpha: 0.06)),
             ),
           ),
           Positioned(
             left: 262, top: 404,
             child: Container(
               width: 202, height: 202,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.teal.withOpacity(0.04)),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.teal.withValues(alpha: 0.04)),
             ),
           ),
 
@@ -70,7 +70,7 @@ class SettingsScreen extends StatelessWidget {
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.deepCyan.withOpacity(0.2))),
+        border: Border(bottom: BorderSide(color: AppColors.deepCyan.withValues(alpha: 0.2))),
       ),
       child: Row(
         children: [
@@ -121,7 +121,7 @@ class SettingsScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.card,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.deepCyan.withOpacity(0.12)),
+          border: Border.all(color: AppColors.deepCyan.withValues(alpha: 0.12)),
         ),
         child: Row(
           children: [
@@ -137,7 +137,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: AppColors.sky.withOpacity(0.7)),
+            Icon(Icons.chevron_right_rounded, color: AppColors.sky.withValues(alpha: 0.7)),
             const SizedBox(width: 16),
           ],
         ),

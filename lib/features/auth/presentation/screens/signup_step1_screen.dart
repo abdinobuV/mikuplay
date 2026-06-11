@@ -37,8 +37,8 @@ class _SignupStep1ScreenState extends State<SignupStep1Screen> {
     if (!_formKey.currentState!.validate()) return;
     if (!_agreed) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("Please agree to MikuPlay's Terms & Conditions"),
+        const SnackBar(
+          content: Text("Please agree to MikuPlay's Terms & Conditions"),
           backgroundColor: AppColors.card,
           behavior: SnackBarBehavior.floating,
         ),

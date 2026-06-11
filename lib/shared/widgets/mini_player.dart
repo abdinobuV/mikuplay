@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/audio_player_service.dart';
@@ -25,12 +26,12 @@ class MiniPlayer extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.navyCard.withOpacity(0.95),
+              color: AppColors.navyCard.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.tealOp(0.3), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
+                  color: Colors.black.withValues(alpha: 0.4),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -51,7 +52,11 @@ class MiniPlayer extends StatelessWidget {
                     clipBehavior: Clip.antiAlias,
                     child: song.imageUrl.startsWith('assets/')
                         ? Image.asset(song.imageUrl, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.music_note, color: AppColors.teal))
-                        : Image.network(song.imageUrl, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.music_note, color: AppColors.teal)),
+                        : CachedNetworkImage(
+                            imageUrl: song.imageUrl,
+                            fit: BoxFit.cover,
+                            errorWidget: (context, url, error) => const Icon(Icons.music_note, color: AppColors.teal),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 12),

@@ -107,8 +107,8 @@ class _ArtistCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   gradient: LinearGradient(
                     colors: [
-                      color.withOpacity(0.15),
-                      color.withOpacity(0.05),
+                      color.withValues(alpha: 0.15),
+                      color.withValues(alpha: 0.05),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -130,7 +130,7 @@ class _ArtistCard extends StatelessWidget {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       alignment: Alignment.center,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.card,
                         shape: BoxShape.circle,
                       ),
@@ -150,7 +150,7 @@ class _ArtistCard extends StatelessWidget {
                 height: 44,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.9),
+                  color: color.withValues(alpha: 0.9),
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(16),
                     bottomRight: Radius.circular(16),

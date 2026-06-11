@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
@@ -7,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/audio_player_service.dart';
 import '../../../../core/models/song_model.dart';
 import '../../../../core/router/app_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   const NowPlayingScreen({super.key});
@@ -57,7 +57,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
-                      colors: [Color(0xFF0609C4).withOpacity(0.3), Colors.transparent],
+                      colors: [const Color(0xFF0609C4).withValues(alpha: 0.3), Colors.transparent],
                     ),
                   ),
                 ),
@@ -112,7 +112,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.5),
+                                  color: Colors.black.withValues(alpha: 0.5),
                                   blurRadius: 25,
                                   spreadRadius: 5,
                                   offset: const Offset(0, 15),
@@ -122,7 +122,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                             child: ClipOval(
                               child: song.imageUrl.startsWith('assets/')
                                   ? Image.asset(song.imageUrl, fit: BoxFit.cover)
-                                  : Image.network(song.imageUrl, fit: BoxFit.cover),
+                                  : CachedNetworkImage(
+                                      imageUrl: song.imageUrl,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (context, url, error) => const Icon(Icons.music_note, color: AppColors.teal),
+                                    ),
                             ),
                           ),
                         ),
@@ -337,7 +341,7 @@ class _SmallActionButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: active ? (color ?? AppColors.teal) : AppColors.whiteOp(0.2), width: 1.5),
-          color: active ? (color ?? AppColors.teal).withOpacity(0.15) : Colors.transparent,
+          color: active ? (color ?? AppColors.teal).withValues(alpha: 0.15) : Colors.transparent,
         ),
         child: Icon(icon, color: color ?? (active ? AppColors.teal : AppColors.whiteOp(0.7)), size: 24),
       ),

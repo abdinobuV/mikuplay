@@ -26,7 +26,6 @@ dependencies:
 
   image_picker: ^1.0.7
   google_generative_ai: ^0.4.7
-  # --- Bagian Firebase & Keamanan (Dari Gambarmu) ---
   firebase_core: ^3.3.0
   firebase_auth: ^5.1.4
   cloud_firestore: ^5.2.1
@@ -36,6 +35,8 @@ dependencies:
   crypto: ^3.0.3
   rxdart: ^0.28.0
   just_audio_background: ^0.0.1-beta.17
+  dio: ^5.9.2
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:

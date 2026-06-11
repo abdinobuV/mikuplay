@@ -3,8 +3,6 @@
 // lib/core/services/auth_service.dart
 // ============================================================
 
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'firestore_service.dart';
@@ -169,10 +167,6 @@ class AuthService {
   Future<AuthResult> sendPasswordResetEmail(String email) async {
     try {
       final cleanEmail = email.trim().toLowerCase();
-      final methods = await _auth.fetchSignInMethodsForEmail(cleanEmail);
-      if (methods.isEmpty) {
-        return AuthResult._(success: true);
-      }
 
       final actionCodeSettings = ActionCodeSettings(
         url: 'https://mikuplay.page.link/reset-password',
@@ -187,7 +181,7 @@ class AuthService {
         actionCodeSettings: actionCodeSettings,
       );
 
-      return AuthResult._(success: true);
+      return const AuthResult._(success: true);
     } on FirebaseAuthException catch (e) {
       return AuthResult.fail(_mapFirebaseError(e.code));
     } catch (e) {

@@ -39,7 +39,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
             left: 262, top: 104,
             child: Container(
               width: 202, height: 202,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.teal.withOpacity(0.04)),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.teal.withValues(alpha: 0.04)),
             ),
           ),
 
@@ -79,7 +79,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.deepCyan.withOpacity(0.2))),
+        border: Border(bottom: BorderSide(color: AppColors.deepCyan.withValues(alpha: 0.2))),
       ),
       child: Row(
         children: [
@@ -116,7 +116,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
           decoration: BoxDecoration(
             color: _isEqEnabled ? AppColors.teal : AppColors.card,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _isEqEnabled ? AppColors.teal : AppColors.deepCyan.withOpacity(0.3)),
+            border: Border.all(color: _isEqEnabled ? AppColors.teal : AppColors.deepCyan.withValues(alpha: 0.3)),
           ),
           child: Row(
             mainAxisAlignment: _isEqEnabled ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
@@ -178,7 +178,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
               decoration: BoxDecoration(
                 color: isSelected ? AppColors.teal : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: isSelected ? AppColors.teal : AppColors.sky.withOpacity(0.3)),
+                border: Border.all(color: isSelected ? AppColors.teal : AppColors.sky.withValues(alpha: 0.3)),
               ),
               child: Text(
                 preset,
@@ -186,7 +186,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                   fontFamily: 'Inter',
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected ? AppColors.navy : AppColors.sky.withOpacity(0.8),
+                  color: isSelected ? AppColors.navy : AppColors.sky.withValues(alpha: 0.8),
                 ),
               ),
             ),
@@ -202,7 +202,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.sky.withOpacity(0.8)),
+          style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.sky.withValues(alpha: 0.8)),
         ),
         Row(
           children: [
@@ -211,9 +211,9 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 4,
                   activeTrackColor: AppColors.teal,
-                  inactiveTrackColor: AppColors.deepCyan.withOpacity(0.2),
+                  inactiveTrackColor: AppColors.deepCyan.withValues(alpha: 0.2),
                   thumbColor: AppColors.teal,
-                  overlayColor: AppColors.teal.withOpacity(0.1),
+                  overlayColor: AppColors.teal.withValues(alpha: 0.1),
                   thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
                   overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
                 ),
@@ -259,9 +259,9 @@ class _VerticalSliderItem extends StatelessWidget {
               data: SliderTheme.of(context).copyWith(
                 trackHeight: 4,
                 activeTrackColor: AppColors.teal,
-                inactiveTrackColor: AppColors.deepCyan.withOpacity(0.2),
+                inactiveTrackColor: AppColors.deepCyan.withValues(alpha: 0.2),
                 thumbColor: AppColors.teal,
-                overlayColor: AppColors.teal.withOpacity(0.1),
+                overlayColor: AppColors.teal.withValues(alpha: 0.1),
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
               ),
@@ -275,7 +275,7 @@ class _VerticalSliderItem extends StatelessWidget {
         const SizedBox(height: 12),
         Text(
           label,
-          style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.sky.withOpacity(0.5)),
+          style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.sky.withValues(alpha: 0.5)),
         ),
       ],
     );

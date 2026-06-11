@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/song_model.dart';
@@ -67,7 +66,7 @@ class LyricsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [Color(0xFF0609C4).withOpacity(0.2), Colors.transparent],
+                  colors: [const Color(0xFF0609C4).withValues(alpha: 0.2), Colors.transparent],
                 ),
               ),
             ),
@@ -182,7 +181,7 @@ class LyricsScreen extends StatelessWidget {
                 border: Border.all(color: AppColors.whiteOp(0.15)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   )

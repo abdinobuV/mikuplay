@@ -8,6 +8,7 @@ import 'signup_step1_screen.dart'; // untuk _StepIndicator & _TermsCheckbox
 
 import '../../../../core/services/firestore_service.dart';
 import '../../../../core/services/auth_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class SignupStep2Screen extends StatefulWidget {
   const SignupStep2Screen({super.key});
@@ -40,8 +41,8 @@ class _SignupStep2ScreenState extends State<SignupStep2Screen> {
   Future<void> _createAccount() async {
     if (!_agreed) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("Please agree to MikuPlay's Terms & Conditions"),
+        const SnackBar(
+          content: Text("Please agree to MikuPlay's Terms & Conditions"),
           backgroundColor: AppColors.card,
           behavior: SnackBarBehavior.floating,
         ),
@@ -300,22 +301,19 @@ class _AvatarPicker extends StatelessWidget {
       return Image.file(pickedImage!, fit: BoxFit.cover);
     }
     // Tampilkan foto default dari Figma
-    return Image.network(
-      defaultUrl,
+    return CachedNetworkImage(
+      imageUrl: defaultUrl,
       fit: BoxFit.cover,
-      loadingBuilder: (_, child, progress) {
-        if (progress == null) return child;
-        return Container(
-          color: AppColors.card,
-          child: Center(
-            child: CircularProgressIndicator(
-              color: AppColors.teal,
-              strokeWidth: 2,
-            ),
+      placeholder: (context, url) => Container(
+        color: AppColors.card,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: AppColors.teal,
+            strokeWidth: 2,
           ),
-        );
-      },
-      errorBuilder: (_, __, ___) => Container(
+        ),
+      ),
+      errorWidget: (context, url, error) => Container(
         color: AppColors.card,
         child: const Center(
           child: Icon(Icons.person_outline_rounded,

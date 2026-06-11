@@ -312,7 +312,7 @@ class _OfflineDownloadsScreenState extends State<OfflineDownloadsScreen> {
                                   },
                                   child: Icon(
                                     Icons.close_rounded,
-                                    color: AppColors.red.withOpacity(0.8),
+                                    color: AppColors.red.withValues(alpha: 0.8),
                                     size: 16,
                                   ),
                                 ),

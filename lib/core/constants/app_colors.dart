@@ -43,14 +43,14 @@ class AppColors {
   static const Color green = Color(0xFF22C55E);
 
   // ── Opacity helpers ──────────────────────────────────────
-  static Color skyWithOpacity(double opacity) => sky.withOpacity(opacity);
-  static Color whiteWithOpacity(double opacity) => white.withOpacity(opacity);
-  static Color tealWithOpacity(double opacity) => teal.withOpacity(opacity);
+  static Color skyWithOpacity(double opacity) => sky.withValues(alpha: opacity);
+  static Color whiteWithOpacity(double opacity) => white.withValues(alpha: opacity);
+  static Color tealWithOpacity(double opacity) => teal.withValues(alpha: opacity);
 
   // Shorthand used in screens
-  static Color skyOp(double opacity) => sky.withOpacity(opacity);
-  static Color tealOp(double opacity) => teal.withOpacity(opacity);
-  static Color whiteOp(double opacity) => white.withOpacity(opacity);
-  static Color navyOp(double opacity) => navy.withOpacity(opacity);
-  static Color deepCyanOp(double opacity) => deepCyan.withOpacity(opacity);
+  static Color skyOp(double opacity) => sky.withValues(alpha: opacity);
+  static Color tealOp(double opacity) => teal.withValues(alpha: opacity);
+  static Color whiteOp(double opacity) => white.withValues(alpha: opacity);
+  static Color navyOp(double opacity) => navy.withValues(alpha: opacity);
+  static Color deepCyanOp(double opacity) => deepCyan.withValues(alpha: opacity);
 }

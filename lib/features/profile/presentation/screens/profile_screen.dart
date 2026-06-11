@@ -15,6 +15,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/services/auth_service.dart';
 import 'dart:io';
 import '../../../../core/services/firestore_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 // ── Data menu item profil (Figma: 5 menu item)
 class _MenuData {
@@ -255,10 +256,10 @@ class _ProfileHeader extends StatelessWidget {
     final photoUrl = AuthService.instance.currentUser?.photoURL;
     if (photoUrl != null && photoUrl.isNotEmpty) {
       if (photoUrl.startsWith('http')) {
-        return Image.network(
-          photoUrl,
+        return CachedNetworkImage(
+          imageUrl: photoUrl,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) =>
+          errorWidget: (context, url, error) =>
               const Icon(Icons.person_rounded, size: 40, color: AppColors.sky),
         );
       } else {

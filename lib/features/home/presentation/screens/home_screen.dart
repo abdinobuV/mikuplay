@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/firestore_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class _TrackData {
   final String id;
@@ -18,6 +19,7 @@ class _TrackData {
   final String audioUrl;
   final String album;
   final String year;
+  final String? lyrics;
 
   const _TrackData({
     required this.id,
@@ -28,6 +30,7 @@ class _TrackData {
     required this.audioUrl,
     this.album = 'Vocaloid Classic',
     this.year = '2024',
+    this.lyrics,
   });
 
   Song toSong() {
@@ -40,6 +43,7 @@ class _TrackData {
       audioUrl: audioUrl,
       duration: _parseDuration(duration),
       year: year,
+      lyrics: lyrics,
     );
   }
 
@@ -98,6 +102,17 @@ class HomeScreen extends StatelessWidget {
         imagePath: 'melt_cover_art.png',
         audioUrl: 'assets/audio/melt.mp3',
         year: '2007',
+        lyrics: '''[00:00.00] Melt - Hatsune Miku (ryo)
+[00:15.50] Asa me ga samete
+[00:18.20] Makkuni omoi ukabu kimi no koto
+[00:23.10] Kaminoke o kitte
+[00:25.80] Kimi ga doushite tte kitte kurenai ka na
+[00:31.00] Melt toketeshimaisou
+[00:36.50] Suki da nante zettai ni ienai...
+[00:43.00] Dakedo Melt me mo awaserarenai
+[00:49.50] Koi ni koi nante shinai wa watashi
+[00:54.00] Datte kimi no koto ga...
+[00:58.50] Suki na no''',
       ).toSong());
       audioService.setPlaylist(songs);
     });
@@ -568,10 +583,10 @@ class _AnimatedAvatarState extends State<_AnimatedAvatar> with SingleTickerProvi
     final photoUrl = AuthService.instance.currentUser?.photoURL;
     if (photoUrl != null && photoUrl.isNotEmpty) {
       if (photoUrl.startsWith('http')) {
-        return Image.network(
-          photoUrl,
+        return CachedNetworkImage(
+          imageUrl: photoUrl,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal),
+          errorWidget: (context, url, error) => const Icon(Icons.person, color: AppColors.teal),
         );
       } else {
         return Image.file(
@@ -726,10 +741,10 @@ class _ProfileDrawer extends StatelessWidget {
     final photoUrl = AuthService.instance.currentUser?.photoURL;
     if (photoUrl != null && photoUrl.isNotEmpty) {
       if (photoUrl.startsWith('http')) {
-        return Image.network(
-          photoUrl,
+        return CachedNetworkImage(
+          imageUrl: photoUrl,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal, size: 30),
+          errorWidget: (context, url, error) => const Icon(Icons.person, color: AppColors.teal, size: 30),
         );
       } else {
         return Image.file(

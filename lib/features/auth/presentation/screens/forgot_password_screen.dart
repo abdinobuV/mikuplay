@@ -183,9 +183,9 @@ class _FormView extends StatelessWidget {
             Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                    color: AppColors.red.withOpacity(0.1),
+                    color: AppColors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.red.withOpacity(0.4))),
+                    border: Border.all(color: AppColors.red.withValues(alpha: 0.4))),
                 child: Row(children: [
                   const Icon(Icons.error_outline_rounded,
                       size: 16, color: AppColors.red),
@@ -199,8 +199,8 @@ class _FormView extends StatelessWidget {
           ],
 
           // Email label
-          Text('Email address',
-              style: const TextStyle(
+          const Text('Email address',
+              style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: AppColors.sky)),

@@ -120,7 +120,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: artistData['color'].withOpacity(0.15),
+                color: artistData['color'].withValues(alpha: 0.15),
               ),
             ),
           ),
@@ -367,7 +367,7 @@ class _SongRow extends StatelessWidget {
               fontFamily: 'Inter',
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: index == 1 ? color : color.withOpacity(0.4),
+              color: index == 1 ? color : color.withValues(alpha: 0.4),
             ),
           ),
         ),
@@ -376,10 +376,10 @@ class _SongRow extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.music_note, color: color.withOpacity(0.5), size: 20),
+          child: Icon(Icons.music_note, color: color.withValues(alpha: 0.5), size: 20),
         ),
         const SizedBox(width: 12),
         Expanded(

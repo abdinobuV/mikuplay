@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:rxdart/rxdart.dart';
+import 'dart:io';
 import '../models/song_model.dart';
+import 'download_service.dart';
 
 class AudioPlayerService {
   static final AudioPlayerService _instance = AudioPlayerService._internal();
@@ -11,7 +14,7 @@ class AudioPlayerService {
 
   AudioPlayerService._internal() {
     _player.playbackEventStream.listen((event) {}, onError: (Object e, StackTrace stackTrace) {
-      print('A stream error occurred: $e');
+      debugPrint('A stream error occurred: $e');
     });
 
     _player.positionStream.listen((pos) => _positionSubject.add(pos));
@@ -60,7 +63,7 @@ class AudioPlayerService {
   }
 
   Future<void> setSong(Song song) async {
-    print("Attempting to play song: ${song.title} from ${song.audioUrl}");
+    debugPrint("Attempting to play song: ${song.title}");
     
     if (_currentSongSubject.hasValue && 
         _currentSongSubject.value?.id == song.id && 
@@ -72,15 +75,23 @@ class AudioPlayerService {
       _currentSongSubject.add(song);
       await _player.stop();
 
-      // KHUSUS ANDROID: Menggunakan AudioSource.uri dengan tag MediaItem yang sangat spesifik
-      // Format URI harus tepat 'asset:///assets/images/...'
       final artUri = song.imageUrl.startsWith('assets/')
           ? Uri.parse('asset:///${song.imageUrl}')
           : Uri.parse(song.imageUrl);
 
-      final audioUri = song.audioUrl.startsWith('assets/')
-          ? Uri.parse('asset:///${song.audioUrl}')
-          : Uri.parse(song.audioUrl);
+      // Check for local downloaded file first
+      final localPath = await DownloadService.instance.getLocalPathIfDownloaded(song);
+      Uri audioUri;
+
+      if (localPath != null && await File(localPath).exists()) {
+        debugPrint("Playing from local file: $localPath");
+        audioUri = Uri.file(localPath);
+      } else {
+        debugPrint("Playing from URL: ${song.audioUrl}");
+        audioUri = song.audioUrl.startsWith('assets/')
+            ? Uri.parse('asset:///${song.audioUrl}')
+            : Uri.parse(song.audioUrl);
+      }
 
       final audioSource = AudioSource.uri(
         audioUri,
@@ -96,7 +107,7 @@ class AudioPlayerService {
       await _player.setAudioSource(audioSource);
       await _player.play();
     } catch (e) {
-      print("Error loading audio: $e");
+      debugPrint("Error loading audio: $e");
     }
   }
 
@@ -115,3 +126,4 @@ class AudioPlayerService {
     await _player.seek(newPosition);
   }
 }
+

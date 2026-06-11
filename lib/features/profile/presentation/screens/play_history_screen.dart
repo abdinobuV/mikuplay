@@ -227,7 +227,7 @@ class PlayHistoryScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.red.withOpacity(0.5)),
+            border: Border.all(color: AppColors.red.withValues(alpha: 0.5)),
           ),
           child: const Center(
             child: Text(

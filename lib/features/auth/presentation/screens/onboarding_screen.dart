@@ -303,8 +303,8 @@ class _BottomControls extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.navy.withOpacity(0.0),
-            AppColors.navy.withOpacity(0.95),
+            AppColors.navy.withValues(alpha: 0.0),
+            AppColors.navy.withValues(alpha: 0.95),
             AppColors.navy,
           ],
           stops: const [0.0, 0.2, 0.5],
