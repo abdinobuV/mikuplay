@@ -50,6 +50,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "23316546507-3b0v64ilruco1943j9m1sa98tnka9ro4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mikuplay.app",
+            "certificate_hash": "74d4c3d8d402a96345c096096050b46f353ba29c"
+          }
+        },
+        {
           "client_id": "23316546507-4vmtcrvjskibnlg1b1aovpvov8r1ko8f.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
