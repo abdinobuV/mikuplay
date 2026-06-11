@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/audio_player_service.dart';
@@ -239,9 +240,9 @@ class _Navbar extends StatelessWidget {
               onTap: () => Scaffold.of(context).openDrawer(),
             ),
             const SizedBox(width: 12),
-            const Text(
-              'Hey, Abdi ',
-              style: TextStyle(
+            Text(
+              'Hey, ${AuthService.instance.currentUser?.displayName?.split(' ').first ?? 'User'} ',
+              style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -554,14 +555,35 @@ class _AnimatedAvatarState extends State<_AnimatedAvatar> with SingleTickerProvi
             border: Border.all(color: AppColors.tealOp(0.5), width: 1),
           ),
           child: ClipOval(
-            child: Image.asset(
-              'assets/images/avatar.png',
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal),
-            ),
+            child: _buildAvatarImage(),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAvatarImage() {
+    final photoUrl = AuthService.instance.currentUser?.photoURL;
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      if (photoUrl.startsWith('http')) {
+        return Image.network(
+          photoUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal),
+        );
+      } else {
+        return Image.file(
+          File(photoUrl),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal),
+        );
+      }
+    }
+    
+    return Image.asset(
+      'assets/images/avatar.png',
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal),
     );
   }
 }
@@ -590,28 +612,30 @@ class _ProfileDrawer extends StatelessWidget {
                       border: Border.all(color: AppColors.tealOp(0.8), width: 2),
                     ),
                     child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/avatar.png',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal, size: 30),
-                      ),
+                      child: _buildDrawerAvatarImage(),
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Hey, Abdi',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.white),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'abdi@mikuplay.com',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.sky),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hey, ${AuthService.instance.currentUser?.displayName?.split(' ').first ?? 'User'}',
+                          style: const TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          AuthService.instance.currentUser?.email ?? '',
+                          style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.sky),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -693,6 +717,31 @@ class _ProfileDrawer extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDrawerAvatarImage() {
+    final photoUrl = AuthService.instance.currentUser?.photoURL;
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      if (photoUrl.startsWith('http')) {
+        return Image.network(
+          photoUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal, size: 30),
+        );
+      } else {
+        return Image.file(
+          File(photoUrl),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal, size: 30),
+        );
+      }
+    }
+    
+    return Image.asset(
+      'assets/images/avatar.png',
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal, size: 30),
     );
   }
 }

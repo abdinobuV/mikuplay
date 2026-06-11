@@ -58,31 +58,27 @@ class AuthService {
     try {
       final cleanEmail = email.trim().toLowerCase();
 
-      final methods = await _auth.fetchSignInMethodsForEmail(cleanEmail);
-      if (methods.isNotEmpty) {
-        return AuthResult.fail(
-          'This email is already registered. Please sign in instead.',
-        );
-      }
-
       final credential = await _auth.createUserWithEmailAndPassword(
         email: cleanEmail,
         password: password,
       );
 
       final user = credential.user!;
-      await user.updateDisplayName(username);
+      
+      // Jalankan secara paralel agar lebih cepat
+      await Future.wait([
+        user.updateDisplayName(username),
+        _db.createUserProfile(
+          uid: user.uid,
+          email: cleanEmail,
+          username: username,
+          photoUrl: photoUrl,
+          provider: 'email',
+        ),
+      ]);
 
-      // Simpan profil ke Firestore
-      await _db.createUserProfile(
-        uid: user.uid,
-        email: cleanEmail,
-        username: username,
-        photoUrl: photoUrl,
-        provider: 'email',
-      );
-
-      await user.sendEmailVerification();
+      // Kirim email verification tanpa harus memblokir navigasi
+      user.sendEmailVerification().ignore();
 
       return AuthResult.ok(user);
     } on FirebaseAuthException catch (e) {
@@ -107,8 +103,8 @@ class AuthService {
         password: password,
       );
 
-      // Update lastLoginAt di Firestore
-      await _db.updateLastLogin(credential.user!.uid);
+      // Update lastLoginAt di Firestore secara background
+      _db.updateLastLogin(credential.user!.uid).ignore();
 
       return AuthResult.ok(credential.user!);
     } on FirebaseAuthException catch (e) {
