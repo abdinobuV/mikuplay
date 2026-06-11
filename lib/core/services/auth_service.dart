@@ -168,17 +168,8 @@ class AuthService {
     try {
       final cleanEmail = email.trim().toLowerCase();
 
-      final actionCodeSettings = ActionCodeSettings(
-        url: 'https://mikuplay.page.link/reset-password',
-        handleCodeInApp: false,
-        androidPackageName: 'com.mikuplay.app',
-        androidInstallApp: true,
-        androidMinimumVersion: '23',
-      );
-
       await _auth.sendPasswordResetEmail(
         email: cleanEmail,
-        actionCodeSettings: actionCodeSettings,
       );
 
       return const AuthResult._(success: true);
