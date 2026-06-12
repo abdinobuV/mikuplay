@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
@@ -30,7 +31,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
         return Scaffold(
           backgroundColor: AppColors.navy,
-          body: Stack(
+          body: GestureDetector(
+            onVerticalDragUpdate: (details) {
+              if (details.delta.dy > 15) {
+                Navigator.pop(context);
+              }
+            },
+            child: Stack(
             children: [
               // Background Decoration
               Positioned(
@@ -98,8 +105,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     // Circular Album Art
                     Center(
                       child: Container(
-                        width: 280,
-                        height: 280,
+                        width: 280.w,
+                        height: 280.w,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: AppColors.tealOp(0.4), width: 1.5),
@@ -312,8 +319,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
               ),
             ],
           ),
-        );
-      },
+        ),
+      );
+    },
     );
   }
 }

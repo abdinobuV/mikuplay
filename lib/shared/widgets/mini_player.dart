@@ -1,3 +1,5 @@
+import 'dart:ui';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -22,13 +24,10 @@ class MiniPlayer extends StatelessWidget {
         return GestureDetector(
           onTap: () => context.push('/now-playing'),
           child: Container(
-            height: 72,
+            height: 72.h,
             margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.navyCard.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.tealOp(0.3), width: 1.5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.4),
@@ -37,7 +36,18 @@ class MiniPlayer extends StatelessWidget {
                 ),
               ],
             ),
-            child: Row(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.navyCard.withValues(alpha: 0.65), // Transparan untuk efek kaca
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.tealOp(0.3), width: 1.5),
+                  ),
+                  child: Row(
               children: [
                 // Album Art (Bulat sesuai gambar baru)
                 Hero(
@@ -137,8 +147,11 @@ class MiniPlayer extends StatelessWidget {
               ],
             ),
           ),
-        );
-      },
+        ),
+      ),
+    ),
+  );
+},
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/song_model.dart';
@@ -8,6 +9,7 @@ import '../../../../core/services/download_service.dart';
 import '../../../../core/router/app_router.dart';
 import '../widgets/responsive_lyrics_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:palette_generator/palette_generator.dart';
 
 class SongDetailScreen extends StatefulWidget {
   final Song? song;
@@ -19,6 +21,39 @@ class SongDetailScreen extends StatefulWidget {
 
 class _SongDetailScreenState extends State<SongDetailScreen> {
   bool _isDownloading = false;
+  Color? _dominantColor;
+
+  @override
+  void initState() {
+    super.initState();
+    _extractDominantColor();
+  }
+
+  Future<void> _extractDominantColor() async {
+    if (widget.song == null) return;
+    final imageUrl = widget.song!.imageUrl;
+    
+    ImageProvider imageProvider;
+    if (imageUrl.startsWith('assets/')) {
+      imageProvider = AssetImage(imageUrl);
+    } else {
+      imageProvider = CachedNetworkImageProvider(imageUrl);
+    }
+
+    try {
+      final paletteGenerator = await PaletteGenerator.fromImageProvider(
+        imageProvider,
+        maximumColorCount: 20,
+      );
+      if (mounted) {
+        setState(() {
+          _dominantColor = paletteGenerator.dominantColor?.color;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to extract color: $e');
+    }
+  }
 
   String _formatDuration(Duration d) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
@@ -53,7 +88,13 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.navy,
-      body: Stack(
+      body: GestureDetector(
+        onVerticalDragUpdate: (details) {
+          if (details.delta.dy > 15) {
+            Navigator.pop(context);
+          }
+        },
+        child: Stack(
         children: [
           // Ambient background glow based on cover
           Positioned(
@@ -66,7 +107,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.tealOp(0.15),
+                    _dominantColor?.withValues(alpha: 0.3) ?? AppColors.tealOp(0.15),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 1.0],
@@ -114,11 +155,17 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                     child: Hero(
                       tag: 'album-art-${song.id}',
                       child: Container(
-                        width: 240,
-                        height: 240,
+                        width: 240.w,
+                        height: 240.w,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           boxShadow: [
+                            if (_dominantColor != null)
+                              BoxShadow(
+                                color: _dominantColor!.withValues(alpha: 0.4),
+                                blurRadius: 40,
+                                spreadRadius: 0,
+                              ),
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.5),
                               blurRadius: 30,
@@ -315,8 +362,9 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _ActionBtn extends StatelessWidget {

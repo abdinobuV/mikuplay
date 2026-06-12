@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -323,7 +324,7 @@ class _FeaturedCard extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        height: 140,
+        height: 140.h,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -454,7 +455,7 @@ class _TrackRow extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        height: 57,
+        height: 57.h,
         decoration: BoxDecoration(
           color: AppColors.card,
           borderRadius: BorderRadius.circular(12),
@@ -685,52 +686,54 @@ class _ProfileDrawer extends StatelessWidget {
                       context.push(Routes.settings);
                     },
                   ),
+                  const SizedBox(height: 16),
+                  const Divider(color: Colors.white10, height: 1),
+                  const SizedBox(height: 8),
+                  _DrawerItem(
+                    icon: Icons.logout,
+                    title: 'Log out',
+                    color: AppColors.red,
+                    onTap: () {
+                      Scaffold.of(context).closeDrawer();
+                      showDialog(
+                        context: context,
+                        builder: (dialogContext) => AlertDialog(
+                          backgroundColor: AppColors.card,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(color: AppColors.deepCyanOp(0.2)),
+                          ),
+                          title: const Text(
+                            'Sign Out',
+                            style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700, color: AppColors.white),
+                          ),
+                          content: Text(
+                            'Are you sure you want to sign out of MikuPlay?',
+                            style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.skyOp(0.8)),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(dialogContext).pop(),
+                              child: Text('Cancel', style: TextStyle(color: AppColors.skyOp(0.7))),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                Navigator.of(dialogContext).pop();
+                                await AuthService.instance.signOut();
+                                await FirestoreService.instance.clearLocalCache();
+                                if (context.mounted) context.go(Routes.login);
+                              },
+                              child: const Text('Sign Out', style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w600)),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 80), // Extra space to clear MiniPlayer
                 ],
               ),
             ),
-            const Divider(color: Colors.white10, height: 1),
-            _DrawerItem(
-              icon: Icons.logout,
-              title: 'Log out',
-              color: AppColors.red,
-              onTap: () {
-                Scaffold.of(context).closeDrawer();
-                showDialog(
-                  context: context,
-                  builder: (dialogContext) => AlertDialog(
-                    backgroundColor: AppColors.card,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(color: AppColors.deepCyanOp(0.2)),
-                    ),
-                    title: const Text(
-                      'Sign Out',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700, color: AppColors.white),
-                    ),
-                    content: Text(
-                      'Are you sure you want to sign out of MikuPlay?',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.skyOp(0.8)),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        child: Text('Cancel', style: TextStyle(color: AppColors.skyOp(0.7))),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          Navigator.of(dialogContext).pop();
-                          await AuthService.instance.signOut();
-                          await FirestoreService.instance.clearLocalCache();
-                          if (context.mounted) context.go(Routes.login);
-                        },
-                        child: const Text('Sign Out', style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w600)),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 10),
           ],
         ),
       ),

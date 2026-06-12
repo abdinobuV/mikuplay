@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import 'core/constants/app_colors.dart';
 import 'core/router/app_router.dart';
@@ -7,8 +8,13 @@ class MikuPlayApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'MikuPlay',
+    return ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MaterialApp.router(
+          title: 'MikuPlay',
       debugShowCheckedModeBanner: false,
 
       // ── Theme ─────────────────────────────────────────────
@@ -109,6 +115,8 @@ class MikuPlayApp extends StatelessWidget {
 
       // ── Router ────────────────────────────────────────────
       routerConfig: appRouter,
+    );
+      },
     );
   }
 }

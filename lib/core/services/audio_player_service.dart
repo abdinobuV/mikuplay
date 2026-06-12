@@ -3,6 +3,8 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:rxdart/rxdart.dart';
 import 'dart:io';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
 import '../models/song_model.dart';
 import 'download_service.dart';
 
@@ -11,6 +13,7 @@ class AudioPlayerService {
   factory AudioPlayerService() => _instance;
 
   final AudioPlayer _player = AudioPlayer();
+  ConcatenatingAudioSource? _playlistSource;
 
   AudioPlayerService._internal() {
     _player.playbackEventStream.listen((event) {}, onError: (Object e, StackTrace stackTrace) {
@@ -21,6 +24,20 @@ class AudioPlayerService {
     _player.durationStream.listen((dur) => _durationSubject.add(dur ?? Duration.zero));
     _player.playerStateStream.listen((state) {
       _playerStateSubject.add(state);
+    });
+
+    // Dengarkan perubahan sequence (lagu berganti otomatis/lewat notifikasi)
+    _player.sequenceStateStream.listen((sequenceState) {
+      if (sequenceState == null) return;
+      final currentItem = sequenceState.currentSource;
+      if (currentItem != null && currentItem.tag is MediaItem) {
+        final mediaItem = currentItem.tag as MediaItem;
+        final currentPlaylist = _playlistSubject.value;
+        try {
+          final matchedSong = currentPlaylist.firstWhere((s) => s.id == mediaItem.id);
+          _currentSongSubject.add(matchedSong);
+        } catch (_) {}
+      }
     });
   }
 
@@ -40,26 +57,43 @@ class AudioPlayerService {
 
   void setPlaylist(List<Song> songs) {
     _playlistSubject.add(songs);
+    _playlistSource = null; // Paksa buat ulang audio source saat lagu diputar
   }
 
   Future<void> skipToNext() async {
-    final songs = _playlistSubject.value;
-    final current = currentSong;
-    if (songs.isEmpty || current == null) return;
-    final currentIndex = songs.indexWhere((s) => s.id == current.id);
-    if (currentIndex == -1) return;
-    final nextIndex = (currentIndex + 1) % songs.length;
-    await setSong(songs[nextIndex]);
+    if (_player.hasNext) {
+      await _player.seekToNext();
+    }
   }
 
   Future<void> skipToPrevious() async {
-    final songs = _playlistSubject.value;
-    final current = currentSong;
-    if (songs.isEmpty || current == null) return;
-    final currentIndex = songs.indexWhere((s) => s.id == current.id);
-    if (currentIndex == -1) return;
-    final prevIndex = (currentIndex - 1 + songs.length) % songs.length;
-    await setSong(songs[prevIndex]);
+    if (_player.hasPrevious) {
+      await _player.seekToPrevious();
+    } else {
+      await _player.seek(Duration.zero);
+    }
+  }
+
+  Future<Uri> _getArtUri(String imageUrl) async {
+    if (imageUrl.isEmpty) return Uri.parse('');
+    if (imageUrl.startsWith('http')) return Uri.parse(imageUrl);
+
+    if (imageUrl.startsWith('assets/')) {
+      try {
+        final byteData = await rootBundle.load(imageUrl);
+        final tempDir = await getTemporaryDirectory();
+        final fileName = imageUrl.replaceAll('/', '_');
+        final file = File('${tempDir.path}/$fileName');
+        if (!await file.exists()) {
+          await file.writeAsBytes(byteData.buffer.asUint8List());
+        }
+        return Uri.file(file.path);
+      } catch (e) {
+        debugPrint("Error loading asset image: $e");
+        return Uri.parse('asset:///$imageUrl');
+      }
+    }
+    return Uri.parse(imageUrl);
   }
 
   Future<void> setSong(Song song) async {
@@ -70,42 +104,61 @@ class AudioPlayerService {
         _player.playing) {
       return;
     }
-    
+
     try {
-      _currentSongSubject.add(song);
-      await _player.stop();
-
-      final artUri = song.imageUrl.startsWith('assets/')
-          ? Uri.parse('asset:///${song.imageUrl}')
-          : Uri.parse(song.imageUrl);
-
-      // Check for local downloaded file first
-      final localPath = await DownloadService.instance.getLocalPathIfDownloaded(song);
-      Uri audioUri;
-
-      if (localPath != null && await File(localPath).exists()) {
-        debugPrint("Playing from local file: $localPath");
-        audioUri = Uri.file(localPath);
-      } else {
-        debugPrint("Playing from URL: ${song.audioUrl}");
-        audioUri = song.audioUrl.startsWith('assets/')
-            ? Uri.parse('asset:///${song.audioUrl}')
-            : Uri.parse(song.audioUrl);
+      final currentPlaylist = _playlistSubject.value;
+      
+      // Jika kosong, tambahkan ke playlist
+      if (currentPlaylist.isEmpty) {
+        _playlistSubject.add([song]);
+      } else if (!currentPlaylist.any((s) => s.id == song.id)) {
+        // Jika lagu tidak ada di playlist saat ini, kita tambahkan lagu ini ke awal atau akhir playlist
+        _playlistSubject.add([...currentPlaylist, song]);
       }
 
-      final audioSource = AudioSource.uri(
-        audioUri,
-        tag: MediaItem(
-          id: song.id,
-          album: song.album,
-          title: song.title,
-          artist: song.artist,
-          artUri: artUri,
-        ),
-      );
+      final updatedPlaylist = _playlistSubject.value;
+      final targetIndex = updatedPlaylist.indexWhere((s) => s.id == song.id);
+
+      if (_playlistSource == null) {
+        List<AudioSource> children = [];
+        for (var s in updatedPlaylist) {
+          final artUri = await _getArtUri(s.imageUrl);
+
+          final localPath = await DownloadService.instance.getLocalPathIfDownloaded(s);
+          Uri audioUri;
+
+          if (localPath != null && await File(localPath).exists()) {
+            audioUri = Uri.file(localPath);
+          } else {
+            audioUri = s.audioUrl.startsWith('assets/')
+                ? Uri.parse('asset:///${s.audioUrl}')
+                : Uri.parse(s.audioUrl);
+          }
+
+          children.add(
+            AudioSource.uri(
+              audioUri,
+              tag: MediaItem(
+                id: s.id,
+                album: s.album ?? "MikuPlay",
+                title: s.title,
+                artist: s.artist,
+                artUri: artUri,
+              ),
+            ),
+          );
+        }
+
+        _playlistSource = ConcatenatingAudioSource(children: children);
+        await _player.setAudioSource(_playlistSource!, initialIndex: targetIndex, initialPosition: Duration.zero);
+      } else {
+        // Playlist sudah ada, cukup pindah indeks
+        await _player.seek(Duration.zero, index: targetIndex);
+      }
       
-      await _player.setAudioSource(audioSource);
+      _currentSongSubject.add(song);
       await _player.play();
+      
     } catch (e) {
       debugPrint("Error loading audio: $e");
     }
@@ -126,4 +179,3 @@ class AudioPlayerService {
     await _player.seek(newPosition);
   }
 }
-

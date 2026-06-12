@@ -106,8 +106,9 @@ class _ResponsiveLyricsViewState extends State<ResponsiveLyricsView> {
           SafeArea(
             child: Column(
               children: [
+                const SizedBox(height: 24), // Extra top margin to prevent clipping
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -174,22 +175,35 @@ class _ResponsiveLyricsViewState extends State<ResponsiveLyricsView> {
                                     duration: const Duration(milliseconds: 300),
                                     height: itemHeight,
                                     alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      _lyrics[index].text,
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: isActive ? 28 : 24,
-                                        fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
-                                        color: isActive 
-                                            ? Colors.white 
-                                            : (isPassed ? Colors.white.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.3)),
-                                        height: 1.2,
-                                        shadows: isActive ? [
-                                          Shadow(
-                                            color: Colors.black.withValues(alpha: 0.5),
-                                            blurRadius: 10,
-                                          )
-                                        ] : null,
+                                    child: TweenAnimationBuilder<double>(
+                                      tween: Tween<double>(
+                                        begin: isActive ? 0.0 : 1.5,
+                                        end: isActive ? 0.0 : 1.5,
+                                      ),
+                                      duration: const Duration(milliseconds: 300),
+                                      builder: (context, blur, child) {
+                                        return ImageFiltered(
+                                          imageFilter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                                          child: child,
+                                        );
+                                      },
+                                      child: Text(
+                                        _lyrics[index].text,
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: isActive ? 28 : 24,
+                                          fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+                                          color: isActive 
+                                              ? Colors.white 
+                                              : (isPassed ? Colors.white.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.3)),
+                                          height: 1.2,
+                                          shadows: isActive ? [
+                                            Shadow(
+                                              color: Colors.black.withValues(alpha: 0.5),
+                                              blurRadius: 10,
+                                            )
+                                          ] : null,
+                                        ),
                                       ),
                                     ),
                                   ),
