@@ -60,3 +60,6 @@ android/.gradle/
 android/key.properties
 *.keystore
 *.jks
+
+# Antigravity artifacts
+.artifacts/
