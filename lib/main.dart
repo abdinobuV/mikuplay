@@ -5,7 +5,26 @@ import 'firebase_options.dart'; // AUTO-GENERATED oleh flutterfire configure
 import 'app.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'core/models/notification_model.dart';
+import 'core/services/notification_service.dart';
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  debugPrint("Handling a background message: ${message.messageId}");
+  
+  if (message.notification != null) {
+    final notif = NotificationModel(
+      id: message.messageId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      title: message.notification!.title ?? 'New Notification',
+      body: message.notification!.body ?? '',
+      timestamp: message.sentTime ?? DateTime.now(),
+    );
+    await NotificationService.instance.saveNotification(notif);
+  }
+}
 
 void main() async {
   // Wajib dipanggil sebelum Firebase.initializeApp
@@ -22,6 +41,30 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  final messaging = FirebaseMessaging.instance;
+  await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+  
+  await messaging.subscribeToTopic('new_songs');
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    debugPrint('Got a foreground message: ${message.notification?.title}');
+    if (message.notification != null) {
+      final notif = NotificationModel(
+        id: message.messageId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        title: message.notification!.title ?? 'New Notification',
+        body: message.notification!.body ?? '',
+        timestamp: message.sentTime ?? DateTime.now(),
+      );
+      await NotificationService.instance.saveNotification(notif);
+    }
+  });
 
   // Load env file
   await dotenv.load(fileName: ".env");

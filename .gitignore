@@ -63,3 +63,6 @@ android/key.properties
 
 # Antigravity artifacts
 .artifacts/
+
+# Firebase Service Account Key
+firebase-service-account.json

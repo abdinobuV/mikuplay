@@ -1,5 +1,8 @@
 import 'dart:io';
 import 'package:supabase/supabase.dart';
+import 'dart:convert';
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:http/http.dart' as http;
 
 void main() async {
   print("=========================================");
@@ -106,7 +109,12 @@ void main() async {
         'duration': '3:00', // Default duration
       });
 
-      print("✅ Sukses: $title\n");
+      print("✅ Sukses: $title");
+      
+      // Mengirim Push Notification
+      print("📨 Mengirim push notification...");
+      await sendNotification(title);
+      print("");
 
     } catch (e) {
       print("❌ Gagal memproses $fileName: $e\n");
@@ -115,4 +123,58 @@ void main() async {
 
   print("🎉 Semua lagu berhasil dipindahkan ke Supabase!");
   exit(0);
+}
+
+Future<void> sendNotification(String songTitle) async {
+  final serviceAccountFile = File('firebase-service-account.json');
+  if (!serviceAccountFile.existsSync()) {
+    print('⚠️ firebase-service-account.json tidak ditemukan, lewati pengiriman notifikasi.');
+    return;
+  }
+
+  try {
+    final accountJson = jsonDecode(serviceAccountFile.readAsStringSync());
+    final projectId = accountJson['project_id'];
+
+    final accountCredentials = ServiceAccountCredentials.fromJson(accountJson);
+    final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+
+    final client = http.Client();
+    final accessCredentials = await obtainAccessCredentialsViaServiceAccount(
+      accountCredentials,
+      scopes,
+      client,
+    );
+
+    final response = await client.post(
+      Uri.parse('https://fcm.googleapis.com/v1/projects/$projectId/messages:send'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${accessCredentials.accessToken.data}',
+      },
+      body: jsonEncode({
+        'message': {
+          'topic': 'new_songs',
+          'notification': {
+            'title': 'Lagu Baru Tersedia! 🎵',
+            'body': 'Dengarkan lagu "$songTitle" sekarang di MikuPlay!',
+          },
+          'android': {
+            'notification': {
+              'sound': 'default',
+            }
+          }
+        }
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('🔔 Notifikasi lagu "$songTitle" berhasil dikirim!');
+    } else {
+      print('❌ Gagal mengirim notifikasi: ${response.body}');
+    }
+    client.close();
+  } catch (e) {
+    print('❌ Error mengirim notifikasi: $e');
+  }
 }
