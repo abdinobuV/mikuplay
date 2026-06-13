@@ -8,6 +8,8 @@ import '../../../../core/services/audio_player_service.dart';
 import '../../../../core/models/song_model.dart';
 import '../../../../core/router/app_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/services/playlist_service.dart';
+import '../widgets/add_to_playlist_sheet.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   const NowPlayingScreen({super.key});
@@ -148,7 +150,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          _SmallActionButton(icon: Icons.add_rounded, onTap: () {}),
+                          _SmallActionButton(
+                            icon: Icons.add_rounded, 
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) => AddToPlaylistBottomSheet(song: song),
+                              );
+                            }
+                          ),
                           Expanded(
                             child: Column(
                               children: [
@@ -181,11 +193,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               ],
                             ),
                           ),
-                          _SmallActionButton(
-                            icon: _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            onTap: () => setState(() => _isLiked = !_isLiked),
-                            color: _isLiked ? AppColors.red : null,
-                            active: _isLiked,
+                          StreamBuilder<bool>(
+                            stream: PlaylistService.instance.isFavorite(song.id),
+                            builder: (context, snapshot) {
+                              final isLiked = snapshot.data ?? false;
+                              return _SmallActionButton(
+                                icon: isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                onTap: () => PlaylistService.instance.toggleFavorite(song),
+                                color: isLiked ? AppColors.red : null,
+                                active: isLiked,
+                              );
+                            }
                           ),
                         ],
                       ),
@@ -230,9 +248,23 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: Icon(Icons.repeat_one_rounded, color: AppColors.whiteOp(0.6), size: 26),
+                          StreamBuilder<LoopMode>(
+                            stream: audioService.loopModeStream,
+                            builder: (context, snapshot) {
+                              final mode = snapshot.data ?? LoopMode.off;
+                              IconData icon = Icons.repeat_rounded;
+                              Color color = AppColors.whiteOp(0.6);
+                              if (mode == LoopMode.all) {
+                                color = AppColors.teal;
+                              } else if (mode == LoopMode.one) {
+                                icon = Icons.repeat_one_rounded;
+                                color = AppColors.teal;
+                              }
+                              return IconButton(
+                                onPressed: audioService.cycleLoopMode,
+                                icon: Icon(icon, color: color, size: 26),
+                              );
+                            }
                           ),
                           IconButton(
                             onPressed: () => audioService.skipToPrevious(),
@@ -267,9 +299,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                             onPressed: () => audioService.skipToNext(),
                             icon: const Icon(Icons.skip_next_rounded, color: AppColors.white, size: 36),
                           ),
-                          IconButton(
-                            onPressed: () {},
-                            icon: Icon(Icons.shuffle_rounded, color: AppColors.whiteOp(0.6), size: 26),
+                          StreamBuilder<bool>(
+                            stream: audioService.shuffleModeEnabledStream,
+                            builder: (context, snapshot) {
+                              final isShuffle = snapshot.data ?? false;
+                              return IconButton(
+                                onPressed: audioService.toggleShuffle,
+                                icon: Icon(Icons.shuffle_rounded, color: isShuffle ? AppColors.teal : AppColors.whiteOp(0.6), size: 26),
+                              );
+                            }
                           ),
                         ],
                       ),

@@ -8,6 +8,7 @@ import '../../../../core/services/playlist_service.dart';
 import '../../../../core/services/download_service.dart';
 import '../../../../core/router/app_router.dart';
 import '../widgets/responsive_lyrics_view.dart';
+import '../widgets/add_to_playlist_sheet.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:palette_generator/palette_generator.dart';
 
@@ -240,7 +241,18 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                         }
                       ),
                       const SizedBox(width: 24),
-                      _ActionBtn(icon: Icons.add, label: 'Add', onTap: () {}),
+                      _ActionBtn(
+                        icon: Icons.add, 
+                        label: 'Add', 
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => AddToPlaylistBottomSheet(song: song),
+                          );
+                        }
+                      ),
                       const SizedBox(width: 24),
                       _isDownloading 
                           ? const SizedBox(width: 48, child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppColors.teal, strokeWidth: 2))))

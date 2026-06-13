@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../models/song_model.dart';
 import 'download_service.dart';
 import 'supabase_service.dart';
+import 'history_service.dart';
 
 class AudioPlayerService {
   static final AudioPlayerService _instance = AudioPlayerService._internal();
@@ -54,6 +55,12 @@ class AudioPlayerService {
         } catch (_) {}
       }
     });
+
+    _currentSongSubject.listen((song) {
+      if (song != null) {
+        HistoryService.instance.addSongToHistory(song);
+      }
+    });
   }
 
   final _positionSubject = BehaviorSubject<Duration>.seeded(Duration.zero);
@@ -67,6 +74,8 @@ class AudioPlayerService {
   Stream<PlayerState> get playerStateStream => _playerStateSubject.stream;
   Stream<Song?> get currentSongStream => _currentSongSubject.stream;
   Stream<List<Song>> get playlistStream => _playlistSubject.stream;
+  Stream<bool> get shuffleModeEnabledStream => _player.shuffleModeEnabledStream;
+  Stream<LoopMode> get loopModeStream => _player.loopModeStream;
 
   Song? get currentSong => _currentSongSubject.hasValue ? _currentSongSubject.value : null;
 
@@ -201,5 +210,28 @@ class AudioPlayerService {
   Future<void> seekBackward() async {
     final newPosition = _player.position - const Duration(seconds: 10);
     await _player.seek(newPosition);
+  }
+
+  Future<void> toggleShuffle() async {
+    final enable = !_player.shuffleModeEnabled;
+    if (enable) {
+      await _player.shuffle();
+    }
+    await _player.setShuffleModeEnabled(enable);
+  }
+
+  Future<void> cycleLoopMode() async {
+    final current = _player.loopMode;
+    switch (current) {
+      case LoopMode.off:
+        await _player.setLoopMode(LoopMode.all);
+        break;
+      case LoopMode.all:
+        await _player.setLoopMode(LoopMode.one);
+        break;
+      case LoopMode.one:
+        await _player.setLoopMode(LoopMode.off);
+        break;
+    }
   }
 }

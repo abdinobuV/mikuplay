@@ -53,6 +53,24 @@ class _SearchScreenState extends State<SearchScreen> {
   final _searchCtrl = TextEditingController();
   bool _isLoading = false;
   List<Song> _searchResults = [];
+  List<Song> _topCharts = [];
+  bool _isChartsLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTopCharts();
+  }
+
+  Future<void> _fetchTopCharts() async {
+    final songs = await SupabaseService().getTopCharts(limit: 3);
+    if (mounted) {
+      setState(() {
+        _topCharts = songs;
+        _isChartsLoading = false;
+      });
+    }
+  }
 
   Future<void> _performSearch(String query) async {
     if (query.trim().isEmpty) {
@@ -91,14 +109,7 @@ class _SearchScreenState extends State<SearchScreen> {
     ),
   ];
 
-  static const _charts = [
-    _ChartData(rank: '01', title: 'Hibikase — GigaP',
-        subtitle: 'Vocaloid · Trending', isTop: true),
-    _ChartData(rank: '02', title: 'Freely Tomorrow — Mitchie M',
-        subtitle: 'Vocaloid · Trending', isTop: false),
-    _ChartData(rank: '03', title: 'Just Be Friends — Dixie Flatline',
-        subtitle: 'Vocaloid · Trending', isTop: false),
-  ];
+
 
   @override
   void dispose() {
@@ -387,14 +398,39 @@ class _SearchScreenState extends State<SearchScreen> {
                 const SizedBox(height: 14),
 
                 // ── Chart Rows ─────────────────────────────────────
-                ...List.generate(_charts.length, (i) => Padding(
-                  padding: const EdgeInsets.only(
-                      left: 20, right: 20, bottom: 13),
-                  child: _ChartRow(
-                    data: _charts[i],
-                    onTap: () {},
+                if (_isChartsLoading)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: CircularProgressIndicator(color: AppColors.teal),
+                    ),
+                  )
+                else if (_topCharts.isNotEmpty)
+                  ...List.generate(_topCharts.length, (i) {
+                    final song = _topCharts[i];
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 13),
+                      child: _ChartRow(
+                        data: _ChartData(
+                          rank: (i + 1).toString().padLeft(2, '0'),
+                          title: '${song.title} — ${song.artist}',
+                          subtitle: 'Vocaloid · Trending',
+                          isTop: i == 0,
+                        ),
+                        onTap: () {
+                          AudioPlayerService().setSong(song);
+                          context.push(Routes.nowPlaying);
+                        },
+                      ),
+                    );
+                  })
+                else
+                  const Center(
+                    child: Text(
+                      'No charts available',
+                      style: TextStyle(fontFamily: 'Inter', color: AppColors.sky),
+                    ),
                   ),
-                )),
 
                 // Space untuk bottom nav
                 const SizedBox(height: 90),
@@ -508,9 +544,10 @@ class _ChartRow extends StatelessWidget {
                   width: 1,
                 ),
               ),
-              padding: const EdgeInsets.only(left: 11, top: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     data.title,
@@ -520,8 +557,10 @@ class _ChartRow extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: AppColors.white,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     data.subtitle,
                     style: TextStyle(
@@ -529,6 +568,8 @@ class _ChartRow extends StatelessWidget {
                       fontSize: 10,
                       color: AppColors.skyOp(0.6),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

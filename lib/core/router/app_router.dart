@@ -27,7 +27,9 @@ import '../../features/home/presentation/screens/notification_screen.dart';
 import '../../features/player/presentation/screens/song_detail_screen.dart';
 import '../../features/player/presentation/screens/up_next_screen.dart';
 import '../../features/player/presentation/screens/lyrics_screen.dart';
+import '../../features/library/presentation/screens/custom_playlist_detail_screen.dart';
 import '../../core/models/song_model.dart';
+import '../../core/models/custom_playlist_model.dart';
 
 // ── Route constants ──────────────────────────────────────────
 class Routes {
@@ -55,6 +57,7 @@ class Routes {
   static const String songDetail = '/song-detail';
   static const String upNext = '/up-next';
   static const String lyrics = '/lyrics';
+  static const String customPlaylist = '/library/playlist';
 }
 
 // ── Durasi transisi ──────────────────────────────────────────
@@ -268,6 +271,13 @@ final GoRouter appRouter = GoRouter(
       path: Routes.notifications,
       pageBuilder: (_, s) => _slideRight(const NotificationScreen(), s),
     ),
+    GoRoute(
+      path: Routes.customPlaylist,
+      pageBuilder: (context, state) {
+        final playlist = state.extra as CustomPlaylist;
+        return _slideRight(CustomPlaylistDetailScreen(playlist: playlist), state);
+      },
+    ),
 
     // ── Player route (Full Screen) ──────────────────────────
     GoRoute(
@@ -294,7 +304,20 @@ final GoRouter appRouter = GoRouter(
       path: Routes.songDetail,
       pageBuilder: (context, state) {
         final song = state.extra as Song?;
-        return _slideUp(SongDetailScreen(song: song), state);
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: SongDetailScreen(song: song),
+          transitionDuration: const Duration(milliseconds: 250),
+          reverseTransitionDuration: const Duration(milliseconds: 200),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final slide = Tween<Offset>(
+              begin: const Offset(0.0, 1.0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+            
+            return SlideTransition(position: slide, child: child);
+          },
+        );
       },
     ),
     GoRoute(

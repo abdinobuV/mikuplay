@@ -357,72 +357,82 @@ class _SongRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 30,
-          child: Text(
-            index.toString(),
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: index == 1 ? color : color.withValues(alpha: 0.4),
+    return Container(
+      height: 64,
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deepCyanOp(0.15)),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 16),
+          SizedBox(
+            width: 24,
+            child: Text(
+              index.toString(),
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: index == 1 ? color : color.withValues(alpha: 0.5),
+              ),
             ),
           ),
-        ),
-        // Placeholder for song cover (Circle)
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
+          // Placeholder for song cover (Circle)
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
           ),
-          child: Icon(Icons.music_note, color: color.withValues(alpha: 0.5), size: 20),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.white,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 12,
-                  color: AppColors.skyOp(0.6),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 12,
+                    color: AppColors.skyOp(0.6),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Icon(Icons.favorite_border, color: AppColors.skyOp(0.6), size: 20),
-        const SizedBox(width: 12),
-        Text(
-          duration,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 12,
-            color: AppColors.skyOp(0.6),
+          const SizedBox(width: 12),
+          Icon(Icons.favorite_border, color: AppColors.skyOp(0.6), size: 16),
+          const SizedBox(width: 8),
+          Text(
+            duration,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 12,
+              color: AppColors.skyOp(0.6),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+        ],
+      ),
     );
   }
 }
