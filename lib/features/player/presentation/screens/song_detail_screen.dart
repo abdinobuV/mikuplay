@@ -27,7 +27,12 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _extractDominantColor();
+    // Delay color extraction until page transition animation completes (usually 300ms)
+    Future.delayed(const Duration(milliseconds: 350), () {
+      if (mounted) {
+        _extractDominantColor();
+      }
+    });
   }
 
   Future<void> _extractDominantColor() async {
@@ -44,7 +49,8 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
     try {
       final paletteGenerator = await PaletteGenerator.fromImageProvider(
         imageProvider,
-        maximumColorCount: 20,
+        maximumColorCount: 10,
+        size: const Size(64, 64), // Resize image drastically for fast color extraction
       );
       if (mounted) {
         setState(() {
@@ -153,34 +159,36 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
 
                   // Album Art with glowing effects
                   Center(
-                    child: Hero(
-                      tag: 'album-art-${song.id}',
-                      child: Container(
-                        width: 240.w,
-                        height: 240.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            if (_dominantColor != null)
-                              BoxShadow(
-                                color: _dominantColor!.withValues(alpha: 0.4),
-                                blurRadius: 40,
-                                spreadRadius: 0,
-                              ),
+                    child: Container(
+                      width: 240.w,
+                      height: 240.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          if (_dominantColor != null)
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              blurRadius: 30,
-                              spreadRadius: 8,
-                              offset: const Offset(0, 15),
+                              color: _dominantColor!.withValues(alpha: 0.4),
+                              blurRadius: 40,
+                              spreadRadius: 0,
                             ),
-                          ],
-                        ),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 30,
+                            spreadRadius: 8,
+                            offset: const Offset(0, 15),
+                          ),
+                        ],
+                      ),
+                      child: Hero(
+                        tag: 'album-art-${song.id}',
                         child: ClipOval(
                           child: song.imageUrl.startsWith('assets/')
                               ? Image.asset(song.imageUrl, fit: BoxFit.cover)
                               : CachedNetworkImage(
                                   imageUrl: song.imageUrl,
                                   fit: BoxFit.cover,
+                                  memCacheWidth: 600,
+                                  memCacheHeight: 600,
                                   errorWidget: (context, url, error) => const Icon(Icons.music_note, color: AppColors.teal),
                                 ),
                         ),
@@ -503,8 +511,6 @@ class _AnimatedWaveformState extends State<_AnimatedWaveform> with SingleTickerP
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate how many bars can fit.
-        // Each bar is 3px wide with 1.5px margin on each side = 6px total per bar.
         final int barCount = (constraints.maxWidth / 6).floor();
 
         return StreamBuilder<Duration>(
@@ -516,44 +522,26 @@ class _AnimatedWaveformState extends State<_AnimatedWaveform> with SingleTickerP
             final double currentFraction = isCurrentSong 
                 ? (position.inMilliseconds / (widget.song.duration.inMilliseconds > 0 ? widget.song.duration.inMilliseconds : 1)).clamp(0.0, 1.0)
                 : 0.0;
-            
-            final int highlightedBars = (barCount * currentFraction).round();
 
             return GestureDetector(
               onTapDown: (details) => _handleSeek(details.localPosition.dx, constraints.maxWidth),
               onPanUpdate: (details) => _handleSeek(details.localPosition.dx, constraints.maxWidth),
               child: Container(
-                height: 36, // Max height for the waveform
-                color: Colors.transparent, // Important for gesture detection
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: List.generate(barCount, (index) {
-                    // Create an organic looking initial height
-                    final baseHeight = 10.0 + (index % 5) * 3.0 + (index % 7) * 2.0;
-                    final isPlayed = index < highlightedBars;
-
-                    return AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, child) {
-                        // Add a subtle sine wave offset based on the index and animation time
-                        // to create a breathing/moving effect.
-                        final offset = (index * 0.2) + (_controller.value * 2 * 3.14159);
-                        final animatedHeight = isCurrentSong
-                          ? baseHeight + (5 * (0.5 * (1 + (offset % 2.0 - 1.0).abs()))) // Animate if playing
-                          : baseHeight;
-
-                        return Container(
-                          width: 3,
-                          height: animatedHeight > 36 ? 36 : animatedHeight,
-                          decoration: BoxDecoration(
-                            color: isPlayed ? AppColors.teal : AppColors.whiteOp(0.2),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        );
-                      },
+                height: 36,
+                color: Colors.transparent,
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return CustomPaint(
+                      size: Size(constraints.maxWidth, 36),
+                      painter: _WaveformPainter(
+                        barCount: barCount,
+                        currentFraction: currentFraction,
+                        isCurrentSong: isCurrentSong,
+                        animationValue: _controller.value,
+                      ),
                     );
-                  }),
+                  },
                 ),
               ),
             );
@@ -561,5 +549,67 @@ class _AnimatedWaveformState extends State<_AnimatedWaveform> with SingleTickerP
         );
       },
     );
+  }
+}
+
+class _WaveformPainter extends CustomPainter {
+  final int barCount;
+  final double currentFraction;
+  final bool isCurrentSong;
+  final double animationValue;
+
+  _WaveformPainter({
+    required this.barCount,
+    required this.currentFraction,
+    required this.isCurrentSong,
+    required this.animationValue,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (barCount == 0) return;
+    
+    final Paint activePaint = Paint()
+      ..color = AppColors.teal
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+      
+    final Paint inactivePaint = Paint()
+      ..color = AppColors.whiteOp(0.2)
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+
+    final int highlightedBars = (barCount * currentFraction).round();
+    final double spacing = size.width / barCount;
+
+    for (int index = 0; index < barCount; index++) {
+      final baseHeight = 10.0 + (index % 5) * 3.0 + (index % 7) * 2.0;
+      final isPlayed = index < highlightedBars;
+      
+      double animatedHeight = baseHeight;
+      if (isCurrentSong) {
+        final offset = (index * 0.2) + (animationValue * 2 * 3.14159);
+        animatedHeight = baseHeight + (5 * (0.5 * (1 + (offset % 2.0 - 1.0).abs())));
+      }
+      
+      if (animatedHeight > size.height) animatedHeight = size.height;
+      
+      final x = index * spacing + (spacing / 2);
+      final y = size.height / 2;
+      
+      canvas.drawLine(
+        Offset(x, y - (animatedHeight / 2)),
+        Offset(x, y + (animatedHeight / 2)),
+        isPlayed ? activePaint : inactivePaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _WaveformPainter oldDelegate) {
+    return oldDelegate.currentFraction != currentFraction ||
+           oldDelegate.animationValue != animationValue ||
+           oldDelegate.isCurrentSong != isCurrentSong ||
+           oldDelegate.barCount != barCount;
   }
 }

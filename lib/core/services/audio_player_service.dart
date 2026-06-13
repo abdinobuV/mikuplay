@@ -98,8 +98,8 @@ class AudioPlayerService {
     }
   }
 
-  Future<Uri> _getArtUri(String imageUrl) async {
-    if (imageUrl.isEmpty) return Uri.parse('');
+  Future<Uri?> _getArtUri(String imageUrl) async {
+    if (imageUrl.isEmpty) return null;
     if (imageUrl.startsWith('http')) return Uri.parse(imageUrl);
 
     if (imageUrl.startsWith('assets/')) {
