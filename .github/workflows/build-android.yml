@@ -1,0 +1,54 @@
+name: Build Android APK
+
+on:
+  # Akan dijalankan setiap ada push ke branch main
+  push:
+    branches:
+      - main
+  # Memungkinkan kita menjalankan robot ini secara manual dari tombol di GitHub
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Flutter APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17' # Flutter versi terbaru butuh Java 17
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: 🔐 Setup Rahasia (Firebase & Env)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+        run: |
+          # Membuat file .env kosong agar aplikasi tidak crash saat di-build
+          touch .env
+          
+          # Mengembalikan file Firebase dari Brankas Rahasia GitHub (Secrets)
+          echo "$GOOGLE_SERVICES_JSON" | base64 --decode > android/app/google-services.json
+          echo "$FIREBASE_OPTIONS_DART" | base64 --decode > lib/firebase_options.dart
+
+      - name: 📦 Install Dependencies
+        run: flutter pub get
+
+      - name: 🔨 Build APK
+        run: flutter build apk --release
+
+      - name: 📤 Upload Artifact APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mikuplay-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
