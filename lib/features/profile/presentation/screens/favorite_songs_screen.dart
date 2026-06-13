@@ -246,7 +246,7 @@ class _FavoriteSongsScreenState extends State<FavoriteSongsScreen> {
                                   Icon(Icons.queue_music_rounded, size: 80, color: AppColors.tealOp(0.3)),
                                   const SizedBox(height: 16),
                                   const Text(
-                                    'Masih Kosong!',
+                                    'It\'s Empty!',
                                     style: TextStyle(
                                       fontFamily: 'Inter',
                                       fontSize: 20,
@@ -256,7 +256,7 @@ class _FavoriteSongsScreenState extends State<FavoriteSongsScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Miku belum menemukan lagu favoritmu.\nYuk, mulai berikan ♥ pada lagu kesukaanmu!',
+                                    'Miku hasn\'t found your favorite songs yet.\nStart giving ♥ to the songs you love!',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontFamily: 'Inter',

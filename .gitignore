@@ -50,3 +50,13 @@ lib/firebase_options.dart
 
 android/build/
 android/.gradle/
+
+# Secrets & Environment Variables
+.env
+*.env
+.env.*
+
+# Android Keystores & Signing Keys
+android/key.properties
+*.keystore
+*.jks

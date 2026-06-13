@@ -12,6 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/supabase_service.dart';
+import '../../../../core/models/song_model.dart';
+import '../../../../core/services/audio_player_service.dart';
 
 // ── Data kategori artis (Figma: Cat/Vocaloid, Cat/LUKA, Cat/KAITO, Cat/GUMI)
 class _CategoryData {
@@ -48,6 +51,21 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final _searchCtrl = TextEditingController();
+  bool _isLoading = false;
+  List<Song> _searchResults = [];
+
+  Future<void> _performSearch(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() => _searchResults = []);
+      return;
+    }
+    setState(() => _isLoading = true);
+    final results = await SupabaseService().searchSongs(query);
+    setState(() {
+      _searchResults = results;
+      _isLoading = false;
+    });
+  }
 
   // Figma categories dengan warna persis dari desain
   static const _categories = [
@@ -175,15 +193,71 @@ class _SearchScreenState extends State<SearchScreen> {
                           borderSide: BorderSide.none,
                         ),
                       ),
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: _performSearch,
                       onChanged: (v) {
-                        // Logic untuk menampilkan hasil pencarian bisa ditambahkan di sini
+                        if (v.isEmpty) {
+                          setState(() => _searchResults = []);
+                        }
                       },
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
 
-                // ── Categories header ──────────────────────────────
+                // ── Hasil Pencarian atau Konten Default ──
+                if (_isLoading)
+                  const Center(child: Padding(
+                    padding: EdgeInsets.only(top: 50.0),
+                    child: CircularProgressIndicator(color: AppColors.teal),
+                  ))
+                else if (_searchResults.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Search Results',
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.white),
+                        ),
+                        const SizedBox(height: 14),
+                        ..._searchResults.map((song) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: GestureDetector(
+                            onTap: () {
+                              AudioPlayerService().setSong(song);
+                              context.push(Routes.nowPlaying);
+                            },
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 50, height: 50,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    image: DecorationImage(image: NetworkImage(song.imageUrl), fit: BoxFit.cover),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                                      Text(song.artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12)),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        )),
+                        const SizedBox(height: 90),
+                      ],
+                    ),
+                  )
+                else ...[
+                  // ── Categories header ──────────────────────────────
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
@@ -325,6 +399,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 // Space untuk bottom nav
                 const SizedBox(height: 90),
               ],
+            ],
             ),
           ),
         ],

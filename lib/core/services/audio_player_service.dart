@@ -7,6 +7,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import '../models/song_model.dart';
 import 'download_service.dart';
+import 'supabase_service.dart';
 
 class AudioPlayerService {
   static final AudioPlayerService _instance = AudioPlayerService._internal();
@@ -21,7 +22,21 @@ class AudioPlayerService {
     });
 
     _player.positionStream.listen((pos) => _positionSubject.add(pos));
-    _player.durationStream.listen((dur) => _durationSubject.add(dur ?? Duration.zero));
+    _player.durationStream.listen((dur) {
+      final duration = dur ?? Duration.zero;
+      _durationSubject.add(duration);
+      
+      // --- AUTO-HEAL DURATION ---
+      final current = currentSong;
+      if (current != null && dur != null && dur.inSeconds > 0) {
+        // Jika durasi di DB masih "3:00" (default) dan durasi asli berbeda
+        if (current.duration.inMinutes == 3 && current.duration.inSeconds % 60 == 0) {
+          if ((dur.inSeconds - current.duration.inSeconds).abs() > 2) {
+            SupabaseService().updateSongDuration(current.id, dur);
+          }
+        }
+      }
+    });
     _player.playerStateStream.listen((state) {
       _playerStateSubject.add(state);
     });
@@ -93,7 +108,32 @@ class AudioPlayerService {
         return Uri.parse('asset:///$imageUrl');
       }
     }
-    return Uri.parse(imageUrl);
+    return Uri.parse('asset:///$imageUrl');
+  }
+
+  Future<AudioSource?> _createAudioSource(Song s) async {
+    final artUri = await _getArtUri(s.imageUrl);
+    final localPath = await DownloadService.instance.getLocalPathIfDownloaded(s);
+    Uri audioUri;
+
+    if (localPath != null && await File(localPath).exists()) {
+      audioUri = Uri.file(localPath);
+    } else {
+      audioUri = s.audioUrl.startsWith('assets/')
+          ? Uri.parse('asset:///${s.audioUrl}')
+          : Uri.parse(s.audioUrl);
+    }
+
+    return AudioSource.uri(
+      audioUri,
+      tag: MediaItem(
+        id: s.id,
+        album: s.album.isNotEmpty ? s.album : "MikuPlay",
+        title: s.title,
+        artist: s.artist,
+        artUri: artUri,
+      ),
+    );
   }
 
   Future<void> setSong(Song song) async {
@@ -122,39 +162,23 @@ class AudioPlayerService {
       if (_playlistSource == null) {
         List<AudioSource> children = [];
         for (var s in updatedPlaylist) {
-          final artUri = await _getArtUri(s.imageUrl);
-
-          final localPath = await DownloadService.instance.getLocalPathIfDownloaded(s);
-          Uri audioUri;
-
-          if (localPath != null && await File(localPath).exists()) {
-            audioUri = Uri.file(localPath);
-          } else {
-            audioUri = s.audioUrl.startsWith('assets/')
-                ? Uri.parse('asset:///${s.audioUrl}')
-                : Uri.parse(s.audioUrl);
-          }
-
-          children.add(
-            AudioSource.uri(
-              audioUri,
-              tag: MediaItem(
-                id: s.id,
-                album: s.album ?? "MikuPlay",
-                title: s.title,
-                artist: s.artist,
-                artUri: artUri,
-              ),
-            ),
-          );
+          final source = await _createAudioSource(s);
+          if (source != null) children.add(source);
         }
 
         _playlistSource = ConcatenatingAudioSource(children: children);
         await _player.setAudioSource(_playlistSource!, initialIndex: targetIndex, initialPosition: Duration.zero);
       } else {
-        // Playlist sudah ada, cukup pindah indeks
+        // Playlist sudah ada, cek apakah lagu baru belum ada di source
+        if (targetIndex >= _playlistSource!.length) {
+          final source = await _createAudioSource(song);
+          if (source != null) {
+            await _playlistSource!.add(source);
+          }
+        }
         await _player.seek(Duration.zero, index: targetIndex);
       }
+
       
       _currentSongSubject.add(song);
       await _player.play();

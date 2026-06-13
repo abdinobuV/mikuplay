@@ -39,6 +39,8 @@ dependencies:
   path_provider: ^2.1.5
   palette_generator: ^0.3.3+7
   flutter_screenutil: ^5.9.3
+  supabase_flutter: ^2.14.2
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -57,6 +59,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - .env
     - assets/images/
     - assets/images/artists/
     - assets/fonts/

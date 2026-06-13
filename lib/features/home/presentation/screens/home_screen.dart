@@ -10,114 +10,46 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/firestore_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/services/supabase_service.dart';
 
-class _TrackData {
-  final String id;
-  final String title;
-  final String artist;
-  final String duration;
-  final String? imagePath;
-  final String audioUrl;
-  final String album;
-  final String year;
-  final String? lyrics;
-
-  const _TrackData({
-    required this.id,
-    required this.title,
-    required this.artist,
-    required this.duration,
-    this.imagePath,
-    required this.audioUrl,
-    this.album = 'Vocaloid Classic',
-    this.year = '2024',
-    this.lyrics,
-  });
-
-  Song toSong() {
-    return Song(
-      id: id,
-      title: title,
-      artist: artist,
-      album: album,
-      imageUrl: imagePath != null ? 'assets/images/$imagePath' : '',
-      audioUrl: audioUrl,
-      duration: _parseDuration(duration),
-      year: year,
-      lyrics: lyrics,
-    );
-  }
-
-  Duration _parseDuration(String d) {
-    final parts = d.split(':');
-    if (parts.length == 2) {
-      return Duration(minutes: int.parse(parts[0]), seconds: int.parse(parts[1]));
-    }
-    return Duration.zero;
-  }
-}
-
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  // ── Data lagu recently played (dari Figma) ──────────────────
-  static const _recentTracks = [
-    _TrackData(
-      id: '1',
-      title: 'World is Mine',
-      artist: 'ryo',
-      duration: '4:09',
-      imagePath: 'world_is_mine.png',
-      audioUrl: 'assets/audio/world_is_mine.mp3', 
-    ),
-    _TrackData(
-      id: '2',
-      title: 'Decorator',
-      artist: 'Livetune',
-      duration: '5:02',
-      imagePath: 'decorator_art.png',
-      audioUrl: 'assets/audio/decorator.mp3',
-    ),
-    _TrackData(
-      id: '3',
-      title: 'Hibikase',
-      artist: 'GigaP',
-      duration: '3:58',
-      imagePath: 'hibikase_art.png',
-      audioUrl: 'assets/audio/hibikase.mp3',
-    ),
-  ];
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isLoading = true;
+  List<Song> _songs = [];
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSongs();
+  }
+
+  Future<void> _fetchSongs() async {
+    final songs = await SupabaseService().getAllSongs();
+    if (mounted) {
+      setState(() {
+        _songs = songs;
+        _isLoading = false;
+      });
+      AudioPlayerService().setPlaylist(_songs);
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final audioService = AudioPlayerService();
-    // Inisialisasi playlist agar fitur Next berfungsi
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final songs = _recentTracks.map((t) => t.toSong()).toList();
-      // Tambahkan Melt ke playlist juga
-      songs.insert(0, const _TrackData(
-        id: 'trending_1',
-        title: 'Melt',
-        artist: 'ryo',
-        duration: '4:33',
-        imagePath: 'melt_cover_art.png',
-        audioUrl: 'assets/audio/melt.mp3',
-        year: '2007',
-        lyrics: '''[00:00.00] Melt - Hatsune Miku (ryo)
-[00:15.50] Asa me ga samete
-[00:18.20] Makkuni omoi ukabu kimi no koto
-[00:23.10] Kaminoke o kitte
-[00:25.80] Kimi ga doushite tte kitte kurenai ka na
-[00:31.00] Melt toketeshimaisou
-[00:36.50] Suki da nante zettai ni ienai...
-[00:43.00] Dakedo Melt me mo awaserarenai
-[00:49.50] Koi ni koi nante shinai wa watashi
-[00:54.00] Datte kimi no koto ga...
-[00:58.50] Suki na no''',
-      ).toSong());
-      audioService.setPlaylist(songs);
-    });
-
     return Scaffold(
       backgroundColor: AppColors.navy,
       drawer: const _ProfileDrawer(),
@@ -146,45 +78,99 @@ class HomeScreen extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   children: [
                     const SizedBox(height: 16),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: _SearchBar(),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildSectionHeader('Trending Vocaloid'),
-                    const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: _FeaturedCard(onTap: () {
-                        final song = const _TrackData(
-                          id: 'trending_1',
-                          title: 'Melt',
-                          artist: 'ryo',
-                          duration: '4:33',
-                          imagePath: 'melt_cover_art.png',
-                          audioUrl: 'assets/audio/melt.mp3',
-                          year: '2007',
-                        ).toSong();
-                        context.push(Routes.songDetail, extra: song);
-                      }),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildSectionHeader('Recently Played', showSeeAll: false),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        children: _recentTracks.map((track) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _TrackRow(
-                            data: track,
-                            onTap: () => context.push(Routes.songDetail, extra: track.toSong()),
-                          ),
-                        )).toList(),
+                      child: _SearchBar(
+                        controller: _searchController,
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
                       ),
                     ),
+                    if (_isLoading)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 100),
+                          child: CircularProgressIndicator(color: AppColors.teal),
+                        ),
+                      )
+                    else if (_songs.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 100),
+                          child: Text(
+                            'No songs found. Upload some!',
+                            style: TextStyle(color: AppColors.sky, fontFamily: 'Inter'),
+                          ),
+                        ),
+                      )
+                    else if (_searchQuery.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      Builder(
+                        builder: (context) {
+                          final query = _searchQuery.toLowerCase();
+                          final filtered = _songs.where((s) => 
+                            s.title.toLowerCase().contains(query) || 
+                            s.artist.toLowerCase().contains(query)
+                          ).toList();
+                          
+                          if (filtered.isEmpty) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 60),
+                                child: Text('No results found', style: TextStyle(color: AppColors.sky, fontFamily: 'Inter')),
+                              ),
+                            );
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: filtered.map((song) => Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: _TrackRow(
+                                  song: song,
+                                  onTap: () => context.push(Routes.songDetail, extra: song),
+                                ),
+                              )).toList(),
+                            ),
+                          );
+                        },
+                      ),
+                    ] else ...[
+                      const SizedBox(height: 20),
+                      _buildSectionHeader('Trending Vocaloid'),
+                      const SizedBox(height: 10),
+                      if (_songs.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _FeaturedCard(
+                            song: _songs.first,
+                            onTap: () {
+                              context.push(Routes.songDetail, extra: _songs.first);
+                            },
+                          ),
+                        ),
+                      const SizedBox(height: 20),
+                      _buildSectionHeader('Recently Played', showSeeAll: false),
+                      const SizedBox(height: 10),
+                      if (_songs.length > 1)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            children: _songs.skip(1).map((song) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: _TrackRow(
+                                song: song,
+                                onTap: () => context.push(Routes.songDetail, extra: song),
+                              ),
+                            )).toList(),
+                          ),
+                        ),
+                    ],
                     // Beri space agar konten tidak tertutup Mini Player di bawah
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
@@ -293,7 +279,10 @@ class _Navbar extends StatelessWidget {
 }
 
 class _SearchBar extends StatelessWidget {
-  const _SearchBar();
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const _SearchBar({required this.controller, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -304,10 +293,16 @@ class _SearchBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(99),
         border: Border.all(color: AppColors.tealOp(0.25), width: 1),
       ),
-      child: const Center(
-        child: Text(
-          'Search songs, artists, playlists...',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.white),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.white),
+        decoration: InputDecoration(
+          hintText: 'Search songs, artists, playlists...',
+          hintStyle: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.skyOp(0.6)),
+          prefixIcon: const Icon(Icons.search, color: AppColors.teal, size: 20),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         ),
       ),
     );
@@ -315,8 +310,9 @@ class _SearchBar extends StatelessWidget {
 }
 
 class _FeaturedCard extends StatelessWidget {
+  final Song song;
   final VoidCallback onTap;
-  const _FeaturedCard({required this.onTap});
+  const _FeaturedCard({required this.song, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -358,9 +354,9 @@ class _FeaturedCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Melt — ryo',
-                    style: TextStyle(
+                  Text(
+                    '${song.title} — ${song.artist}',
+                    style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -371,7 +367,7 @@ class _FeaturedCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Hatsune Miku · 2007\n808K plays',
+                    '${song.artist} · ${song.year.isEmpty ? "2024" : song.year}\n808K plays',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 12,
@@ -397,14 +393,22 @@ class _FeaturedCard extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.asset(
-                          'assets/images/melt_cover_art.png',
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            color: AppColors.tealOp(0.2),
-                            child: const Icon(Icons.music_note, color: AppColors.teal, size: 40),
-                          ),
-                        ),
+                        song.imageUrl.isNotEmpty
+                            ? (song.imageUrl.startsWith('http')
+                                ? CachedNetworkImage(
+                                    imageUrl: song.imageUrl,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (_, __, ___) => Container(color: AppColors.tealOp(0.2)),
+                                  )
+                                : Image.asset(
+                                    song.imageUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(color: AppColors.tealOp(0.2)),
+                                  ))
+                            : Container(
+                                color: AppColors.tealOp(0.2),
+                                child: const Icon(Icons.music_note, color: AppColors.teal, size: 40),
+                              ),
                         Container(color: Colors.black.withAlpha((0.1 * 255).toInt())),
                       ],
                     ),
@@ -424,9 +428,9 @@ class _FeaturedCard extends StatelessWidget {
                       color: Colors.black.withAlpha((0.5 * 255).toInt()),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
-                      '4:33',
-                      style: TextStyle(
+                    child: Text(
+                      '${song.duration.inMinutes}:${(song.duration.inSeconds % 60).toString().padLeft(2, '0')}',
+                      style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -445,9 +449,9 @@ class _FeaturedCard extends StatelessWidget {
 }
 
 class _TrackRow extends StatelessWidget {
-  final _TrackData   data;
+  final Song song;
   final VoidCallback onTap;
-  const _TrackRow({required this.data, required this.onTap});
+  const _TrackRow({required this.song, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -472,12 +476,18 @@ class _TrackRow extends StatelessWidget {
                 border: Border.all(color: AppColors.tealOp(0.3), width: 1),
               ),
               child: ClipOval(
-                child: data.imagePath != null
-                    ? Image.asset(
-                        'assets/images/${data.imagePath}',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildMusicIcon(),
-                      )
+                child: song.imageUrl.isNotEmpty
+                    ? (song.imageUrl.startsWith('http')
+                        ? CachedNetworkImage(
+                            imageUrl: song.imageUrl,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => _buildMusicIcon(),
+                          )
+                        : Image.asset(
+                            song.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildMusicIcon(),
+                          ))
                     : _buildMusicIcon(),
               ),
             ),
@@ -488,7 +498,9 @@ class _TrackRow extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    data.title,
+                    song.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 13,
@@ -498,14 +510,16 @@ class _TrackRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    data.artist,
+                    song.artist,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.skyOp(0.7)),
                   ),
                 ],
               ),
             ),
             Text(
-              data.duration,
+              '${song.duration.inMinutes}:${(song.duration.inSeconds % 60).toString().padLeft(2, '0')}',
               style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.skyOp(0.5)),
             ),
             const SizedBox(width: 12),
