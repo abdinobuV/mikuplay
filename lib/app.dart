@@ -107,8 +107,8 @@ class MikuPlayApp extends StatelessWidget {
         ),
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
-            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.android: const CupertinoPageTransitionsBuilder(),
+            TargetPlatform.iOS: const CupertinoPageTransitionsBuilder(),
           },
         ),
       ),
