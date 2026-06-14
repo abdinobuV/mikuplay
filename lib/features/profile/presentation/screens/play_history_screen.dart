@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/history_service.dart';
-import '../../../../core/models/song_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/router/app_router.dart';
 

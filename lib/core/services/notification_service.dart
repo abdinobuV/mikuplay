@@ -10,6 +10,7 @@ class NotificationService {
 
   Future<List<NotificationModel>> getNotifications() async {
     final prefs = await SharedPreferences.getInstance();
+    await prefs.reload(); // Force reload from disk in case background isolate updated it
     final jsonStringList = prefs.getStringList(_storageKey) ?? [];
     
     final notifications = jsonStringList

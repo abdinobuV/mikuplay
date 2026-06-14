@@ -57,9 +57,11 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Dekorasi kanan atas (khusus tab Home)
           Positioned(
-            left: 262, top: -61,
+            left: 262,
+            top: -61,
             child: Container(
-              width: 222, height: 222,
+              width: 222,
+              height: 222,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.tealOp(0.05),
@@ -93,7 +95,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       const Center(
                         child: Padding(
                           padding: EdgeInsets.only(top: 100),
-                          child: CircularProgressIndicator(color: AppColors.teal),
+                          child:
+                              CircularProgressIndicator(color: AppColors.teal),
                         ),
                       )
                     else if (_songs.isEmpty)
@@ -101,8 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Padding(
                           padding: EdgeInsets.only(top: 100),
                           child: Text(
-                            'No songs found. Upload some!',
-                            style: TextStyle(color: AppColors.sky, fontFamily: 'Inter'),
+                            'No songs found. Check your connection!',
+                            style: TextStyle(
+                                color: AppColors.sky, fontFamily: 'Inter'),
                           ),
                         ),
                       )
@@ -111,29 +115,38 @@ class _HomeScreenState extends State<HomeScreen> {
                       Builder(
                         builder: (context) {
                           final query = _searchQuery.toLowerCase();
-                          final filtered = _songs.where((s) => 
-                            s.title.toLowerCase().contains(query) || 
-                            s.artist.toLowerCase().contains(query)
-                          ).toList();
-                          
+                          final filtered = _songs
+                              .where((s) =>
+                                  s.title.toLowerCase().contains(query) ||
+                                  s.artist.toLowerCase().contains(query))
+                              .toList();
+
                           if (filtered.isEmpty) {
                             return const Center(
                               child: Padding(
                                 padding: EdgeInsets.only(top: 60),
-                                child: Text('No results found', style: TextStyle(color: AppColors.sky, fontFamily: 'Inter')),
+                                child: Text('No results found',
+                                    style: TextStyle(
+                                        color: AppColors.sky,
+                                        fontFamily: 'Inter')),
                               ),
                             );
                           }
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Column(
-                              children: filtered.map((song) => Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: _TrackRow(
-                                  song: song,
-                                  onTap: () => context.push(Routes.songDetail, extra: song),
-                                ),
-                              )).toList(),
+                              children: filtered
+                                  .map((song) => Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 10),
+                                        child: _TrackRow(
+                                          song: song,
+                                          onTap: () => context.push(
+                                              Routes.songDetail,
+                                              extra: song),
+                                        ),
+                                      ))
+                                  .toList(),
                             ),
                           );
                         },
@@ -148,7 +161,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: _FeaturedCard(
                             song: _songs.first,
                             onTap: () {
-                              context.push(Routes.songDetail, extra: _songs.first);
+                              context.push(Routes.songDetail,
+                                  extra: _songs.first);
                             },
                           ),
                         ),
@@ -159,13 +173,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Column(
-                            children: _songs.skip(1).map((song) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: _TrackRow(
-                                song: song,
-                                onTap: () => context.push(Routes.songDetail, extra: song),
-                              ),
-                            )).toList(),
+                            children: _songs
+                                .skip(1)
+                                .map((song) => Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: _TrackRow(
+                                        song: song,
+                                        onTap: () => context.push(
+                                            Routes.songDetail,
+                                            extra: song),
+                                      ),
+                                    ))
+                                .toList(),
                           ),
                         ),
                     ],
@@ -260,12 +280,16 @@ class _Navbar extends StatelessWidget {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  const Icon(Icons.notifications_outlined, size: 24, color: AppColors.white),
+                  const Icon(Icons.notifications_outlined,
+                      size: 24, color: AppColors.white),
                   Positioned(
-                    right: 0, top: 0,
+                    right: 0,
+                    top: 0,
                     child: Container(
-                      width: 8, height: 8,
-                      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.red),
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                          shape: BoxShape.circle, color: AppColors.red),
                     ),
                   ),
                 ],
@@ -296,13 +320,16 @@ class _SearchBar extends StatelessWidget {
       child: TextField(
         controller: controller,
         onChanged: onChanged,
-        style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.white),
+        style: const TextStyle(
+            fontFamily: 'Inter', fontSize: 13, color: AppColors.white),
         decoration: InputDecoration(
           hintText: 'Search songs, artists, playlists...',
-          hintStyle: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.skyOp(0.6)),
+          hintStyle: TextStyle(
+              fontFamily: 'Inter', fontSize: 13, color: AppColors.skyOp(0.6)),
           prefixIcon: const Icon(Icons.search, color: AppColors.teal, size: 20),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         ),
       ),
     );
@@ -336,7 +363,8 @@ class _FeaturedCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.tealOp(0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -379,14 +407,19 @@ class _FeaturedCard extends StatelessWidget {
               ),
             ),
             Positioned(
-              right: -40, top: -10, bottom: -10,
+              right: -40,
+              top: -10,
+              bottom: -10,
               child: AspectRatio(
                 aspectRatio: 1,
                 child: Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withAlpha((0.4 * 255).toInt()), blurRadius: 15, spreadRadius: 2),
+                      BoxShadow(
+                          color: Colors.black.withAlpha((0.4 * 255).toInt()),
+                          blurRadius: 15,
+                          spreadRadius: 2),
                     ],
                   ),
                   child: ClipOval(
@@ -398,18 +431,22 @@ class _FeaturedCard extends StatelessWidget {
                                 ? CachedNetworkImage(
                                     imageUrl: song.imageUrl,
                                     fit: BoxFit.cover,
-                                    errorWidget: (_, __, ___) => Container(color: AppColors.tealOp(0.2)),
+                                    errorWidget: (_, __, ___) =>
+                                        Container(color: AppColors.tealOp(0.2)),
                                   )
                                 : Image.asset(
                                     song.imageUrl,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Container(color: AppColors.tealOp(0.2)),
+                                    errorBuilder: (_, __, ___) =>
+                                        Container(color: AppColors.tealOp(0.2)),
                                   ))
                             : Container(
                                 color: AppColors.tealOp(0.2),
-                                child: const Icon(Icons.music_note, color: AppColors.teal, size: 40),
+                                child: const Icon(Icons.music_note,
+                                    color: AppColors.teal, size: 40),
                               ),
-                        Container(color: Colors.black.withAlpha((0.1 * 255).toInt())),
+                        Container(
+                            color: Colors.black.withAlpha((0.1 * 255).toInt())),
                       ],
                     ),
                   ),
@@ -417,13 +454,15 @@ class _FeaturedCard extends StatelessWidget {
               ),
             ),
             Positioned(
-              right: 25, bottom: 15,
+              right: 25,
+              bottom: 15,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black.withAlpha((0.5 * 255).toInt()),
                       borderRadius: BorderRadius.circular(8),
@@ -469,7 +508,8 @@ class _TrackRow extends StatelessWidget {
           children: [
             const SizedBox(width: 9),
             Container(
-              width: 38, height: 38,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.tealOp(0.15),
@@ -513,14 +553,20 @@ class _TrackRow extends StatelessWidget {
                     song.artist,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.skyOp(0.7)),
+                    style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 11,
+                        color: AppColors.skyOp(0.7)),
                   ),
                 ],
               ),
             ),
             Text(
               '${song.duration.inMinutes}:${(song.duration.inSeconds % 60).toString().padLeft(2, '0')}',
-              style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.skyOp(0.5)),
+              style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 11,
+                  color: AppColors.skyOp(0.5)),
             ),
             const SizedBox(width: 12),
           ],
@@ -530,7 +576,9 @@ class _TrackRow extends StatelessWidget {
   }
 
   Widget _buildMusicIcon() {
-    return Center(child: Icon(Icons.music_note_rounded, size: 18, color: AppColors.tealOp(0.6)));
+    return Center(
+        child: Icon(Icons.music_note_rounded,
+            size: 18, color: AppColors.tealOp(0.6)));
   }
 }
 
@@ -542,7 +590,8 @@ class _AnimatedAvatar extends StatefulWidget {
   State<_AnimatedAvatar> createState() => _AnimatedAvatarState();
 }
 
-class _AnimatedAvatarState extends State<_AnimatedAvatar> with SingleTickerProviderStateMixin {
+class _AnimatedAvatarState extends State<_AnimatedAvatar>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -577,7 +626,8 @@ class _AnimatedAvatarState extends State<_AnimatedAvatar> with SingleTickerProvi
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
-          width: 39, height: 39,
+          width: 39,
+          height: 39,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             // Fallback to withOpacity if tealOp is not static, but it seems to be defined.
@@ -601,21 +651,24 @@ class _AnimatedAvatarState extends State<_AnimatedAvatar> with SingleTickerProvi
         return CachedNetworkImage(
           imageUrl: photoUrl,
           fit: BoxFit.cover,
-          errorWidget: (context, url, error) => const Icon(Icons.person, color: AppColors.teal),
+          errorWidget: (context, url, error) =>
+              const Icon(Icons.person, color: AppColors.teal),
         );
       } else {
         return Image.file(
           File(photoUrl),
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal),
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.person, color: AppColors.teal),
         );
       }
     }
-    
+
     return Image.asset(
       'assets/images/avatar.png',
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal),
+      errorBuilder: (_, __, ___) =>
+          const Icon(Icons.person, color: AppColors.teal),
     );
   }
 }
@@ -633,15 +686,18 @@ class _ProfileDrawer extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.tealOp(0.2))),
+                border:
+                    Border(bottom: BorderSide(color: AppColors.tealOp(0.2))),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 60, height: 60,
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.tealOp(0.8), width: 2),
+                      border:
+                          Border.all(color: AppColors.tealOp(0.8), width: 2),
                     ),
                     child: ClipOval(
                       child: _buildDrawerAvatarImage(),
@@ -655,14 +711,21 @@ class _ProfileDrawer extends StatelessWidget {
                       children: [
                         Text(
                           'Hey, ${AuthService.instance.currentUser?.displayName?.split(' ').first ?? 'User'}',
-                          style: const TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.white),
+                          style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.white),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           AuthService.instance.currentUser?.email ?? '',
-                          style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.sky),
+                          style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 13,
+                              color: AppColors.sky),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -719,25 +782,38 @@ class _ProfileDrawer extends StatelessWidget {
                           ),
                           title: const Text(
                             'Sign Out',
-                            style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700, color: AppColors.white),
+                            style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.white),
                           ),
                           content: Text(
                             'Are you sure you want to sign out of MikuPlay?',
-                            style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.skyOp(0.8)),
+                            style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 13,
+                                color: AppColors.skyOp(0.8)),
                           ),
                           actions: [
                             TextButton(
-                              onPressed: () => Navigator.of(dialogContext).pop(),
-                              child: Text('Cancel', style: TextStyle(color: AppColors.skyOp(0.7))),
+                              onPressed: () =>
+                                  Navigator.of(dialogContext).pop(),
+                              child: Text('Cancel',
+                                  style:
+                                      TextStyle(color: AppColors.skyOp(0.7))),
                             ),
                             TextButton(
                               onPressed: () async {
                                 Navigator.of(dialogContext).pop();
                                 await AuthService.instance.signOut();
-                                await FirestoreService.instance.clearLocalCache();
+                                await FirestoreService.instance
+                                    .clearLocalCache();
                                 if (context.mounted) context.go(Routes.login);
                               },
-                              child: const Text('Sign Out', style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w600)),
+                              child: const Text('Sign Out',
+                                  style: TextStyle(
+                                      color: AppColors.red,
+                                      fontWeight: FontWeight.w600)),
                             ),
                           ],
                         ),
@@ -761,21 +837,24 @@ class _ProfileDrawer extends StatelessWidget {
         return CachedNetworkImage(
           imageUrl: photoUrl,
           fit: BoxFit.cover,
-          errorWidget: (context, url, error) => const Icon(Icons.person, color: AppColors.teal, size: 30),
+          errorWidget: (context, url, error) =>
+              const Icon(Icons.person, color: AppColors.teal, size: 30),
         );
       } else {
         return Image.file(
           File(photoUrl),
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal, size: 30),
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.person, color: AppColors.teal, size: 30),
         );
       }
     }
-    
+
     return Image.asset(
       'assets/images/avatar.png',
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => const Icon(Icons.person, color: AppColors.teal, size: 30),
+      errorBuilder: (_, __, ___) =>
+          const Icon(Icons.person, color: AppColors.teal, size: 30),
     );
   }
 }
@@ -797,14 +876,19 @@ class _DrawerItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-      leading: Icon(icon, color: color == AppColors.white ? AppColors.tealOp(0.8) : color, size: 24),
+      leading: Icon(icon,
+          color: color == AppColors.white ? AppColors.tealOp(0.8) : color,
+          size: 24),
       title: Text(
         title,
-        style: TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w500, color: color),
+        style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: color),
       ),
       onTap: onTap,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
   }
 }
-
