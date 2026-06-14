@@ -30,28 +30,58 @@ void main() async {
   // Wajib dipanggil sebelum Firebase.initializeApp
   WidgetsFlutterBinding.ensureInitialized();
 
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
-    androidNotificationChannelName: 'Audio playback',
-    androidNotificationOngoing: true,
-    androidNotificationIcon: 'drawable/ic_notification',
+  // ── Inisialisasi service utama secara paralel ──────────────
+  await Future.wait([
+    JustAudioBackground.init(
+      androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
+      androidNotificationChannelName: 'Audio playback',
+      androidNotificationOngoing: true,
+      androidNotificationIcon: 'drawable/ic_notification',
+    ),
+    Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ),
+    dotenv.load(fileName: ".env"),
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]),
+  ]);
+
+  // Jalankan setup push notification di background tanpa memblokir UI
+  _setupPushNotifications();
+
+  // ── Inisialisasi Supabase (Butuh dotenv) ───────────────────
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL'] ?? 'https://vikvtiwghzvjuthghlxu.supabase.co',
+    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'sb_publishable_anUSAdPm26P4Am2TzlAqDQ_7wvQOJWH',
   );
 
-  // ── Inisialisasi Firebase ──────────────────────────────────
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // ── Status bar transparan (sesuai desain Figma) ────────────
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+  ));
 
+  runApp(const MikuPlayApp());
+}
+
+void _setupPushNotifications() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   final messaging = FirebaseMessaging.instance;
-  await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
   
-  await messaging.subscribeToTopic('new_songs');
+  // Minta izin secara async (tidak ditunggu oleh main)
+  try {
+    await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    await messaging.subscribeToTopic('new_songs');
+  } catch (e) {
+    debugPrint('Failed to setup push notifications: $e');
+  }
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     debugPrint('Got a foreground message: ${message.notification?.title}');
@@ -65,27 +95,4 @@ void main() async {
       await NotificationService.instance.saveNotification(notif);
     }
   });
-
-  // Load env file
-  await dotenv.load(fileName: ".env");
-
-  // ── Inisialisasi Supabase ──────────────────────────────────
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL'] ?? 'https://vikvtiwghzvjuthghlxu.supabase.co',
-    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'sb_publishable_anUSAdPm26P4Am2TzlAqDQ_7wvQOJWH',
-  );
-
-  // ── Paksa portrait mode ────────────────────────────────────
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
-  // ── Status bar transparan (sesuai desain Figma) ────────────
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-  ));
-
-  runApp(const MikuPlayApp());
 }
